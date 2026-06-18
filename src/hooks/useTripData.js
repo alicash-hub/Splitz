@@ -73,5 +73,9 @@ export function useTripData(tripId) {
     }
   }, [tripId, refreshMembers, refreshExpenses])
 
-  return { members, expenses, loading, error, refreshExpenses }
+  const refresh = useCallback(async () => {
+    await Promise.all([refreshMembers(), refreshExpenses()])
+  }, [refreshMembers, refreshExpenses])
+
+  return { members, expenses, loading, error, refreshExpenses, refresh }
 }

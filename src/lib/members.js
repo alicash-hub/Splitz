@@ -49,3 +49,14 @@ export async function joinTrip(tripId, name) {
   }
   throw error
 }
+
+/**
+ * Remove a member from a trip. Their expenses cascade-delete with them (handled
+ * at the DB level) — callers must make this consequence clear in the UI first.
+ *
+ * @param {string} memberId
+ */
+export async function deleteMember(memberId) {
+  const { error } = await supabase.from('members').delete().eq('id', memberId)
+  if (error) throw error
+}
