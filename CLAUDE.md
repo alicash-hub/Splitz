@@ -55,7 +55,7 @@ src/
   hooks/            # custom React hooks (e.g. useLocalStorage, useTrip)
   lib/
     supabaseClient.js  # single shared Supabase client (reads VITE_ env vars)
-    settlement.js      # pure settlement algorithm (to build) — keep UI-free + tested
+    settlement.js      # pure settlement algorithm — UI-free + unit-tested
   App.jsx
   main.jsx
   index.css         # Tailwind import + @theme design tokens
