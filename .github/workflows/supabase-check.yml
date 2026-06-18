@@ -1,0 +1,27 @@
+name: Supabase connection check
+
+# Manual-only: run this from the Actions tab (or it can be triggered for you).
+# It reads your project URL + anon key from repository secrets and verifies the
+# app can reach Supabase. The anon key is publishable (RLS-gated) and is never
+# printed by the script; GitHub also masks secret values in logs.
+on:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check Supabase connection
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: node scripts/check-connection.mjs
