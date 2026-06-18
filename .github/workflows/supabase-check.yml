@@ -6,6 +6,15 @@ name: Supabase connection check
 # printed by the script; GitHub also masks secret values in logs.
 on:
   workflow_dispatch:
+  # Also run on push to this feature branch — workflow_dispatch only works once
+  # the workflow is on the default branch, which it isn't yet.
+  push:
+    branches:
+      - claude/create-claude-md-ellsz9
+    paths:
+      - .github/workflows/supabase-check.yml
+      - scripts/check-connection.mjs
+      - package-lock.json
 
 jobs:
   check:
