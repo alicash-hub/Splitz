@@ -116,6 +116,12 @@ publication so the dashboard can subscribe to live changes. A case-insensitive
 unique index on `members (trip_id, lower(name))` enforces the no-duplicate-names
 rule at the DB level.
 
+Deleting a member or trip **cascades** (removes their expenses too). We keep this
+at the DB level and put the safety where it belongs — in the **UX**: deleting a
+member is a destructive action that must be hard to do by mistake (confirm step,
+and surface that their expenses go with them). Don't rely on the database to
+second-guess the user.
+
 ## Settlement algorithm
 
 1. Sum all expenses for the trip.
