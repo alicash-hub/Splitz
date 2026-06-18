@@ -26,17 +26,52 @@ up. No login, no install — share a link in WhatsApp and go.
 - **State:** React state + Supabase real-time subscriptions
 - **Auth:** none. Identity = name in `localStorage` + a row in the `members` table.
 
-When the toolchain is scaffolded, document the real commands here:
+- **Build tool:** Vite 6 (React 19, `@vitejs/plugin-react`)
+- **Routing:** React Router (`react-router-dom`)
+- **Tailwind:** v4, wired via the `@tailwindcss/vite` plugin. There is **no**
+  `tailwind.config.js` — design tokens live in `@theme` inside `src/index.css`.
+- **Tests:** Vitest
+
+Commands (verified working):
 
 ```
-# dev server     — TODO once scaffolded (likely `npm run dev`)
-# build          — TODO
-# lint           — TODO
-# test           — TODO
+npm install      # install deps
+npm run dev      # Vite dev server (http://localhost:5173)
+npm run build    # production build to dist/
+npm run preview  # serve the production build locally
+npm run lint     # ESLint (flat config in eslint.config.js)
+npm test         # Vitest (run once); npm run test:watch for watch mode
 ```
 
-> Keep this section honest: update it the moment scripts exist, and don't claim a
+> Keep this section honest: update it the moment scripts change, and don't claim a
 > command works until it's been run.
+
+## Project structure
+
+```
+src/
+  components/        # reusable UI (cards, buttons, bottom sheet, …)
+  pages/            # route-level screens (Home, TripDashboard, JoinTrip)
+  hooks/            # custom React hooks (e.g. useLocalStorage, useTrip)
+  lib/
+    supabaseClient.js  # single shared Supabase client (reads VITE_ env vars)
+    settlement.js      # pure settlement algorithm (to build) — keep UI-free + tested
+  App.jsx
+  main.jsx
+  index.css         # Tailwind import + @theme design tokens
+.env.example        # template for Supabase env vars (copy to .env.local)
+```
+
+### Environment variables
+
+Supabase config is read from Vite env vars (only `VITE_`-prefixed vars reach the
+client). Copy `.env.example` → `.env.local` and fill in:
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY` (anon key only — never the `service_role` key)
+
+`.env.local` is gitignored. The anon key is safe in the browser because access is
+gated by Supabase Row Level Security.
 
 ## Core user flow
 
