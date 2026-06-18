@@ -105,6 +105,17 @@ members), `amount` (numeric, EGP), `description` (text), `created_at` (timestamp
 
 Split is **equal among all members** for MVP — no per-expense split config.
 
+### Migrations
+
+Schema lives in `supabase/migrations/` as timestamped SQL files. Supabase is
+connected to this GitHub repo and **auto-applies migrations on push** — so a
+migration is a forward-only change: never edit an applied file, add a new one.
+RLS is enabled on all tables with permissive public (anon) read/write policies
+for the MVP (no auth). All three tables are added to the `supabase_realtime`
+publication so the dashboard can subscribe to live changes. A case-insensitive
+unique index on `members (trip_id, lower(name))` enforces the no-duplicate-names
+rule at the DB level.
+
 ## Settlement algorithm
 
 1. Sum all expenses for the trip.
