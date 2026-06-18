@@ -29,3 +29,21 @@ export async function createTrip(name, { maxAttempts = 5 } = {}) {
 
   throw new Error('Could not generate a unique trip link. Please try again.')
 }
+
+/**
+ * Look up a trip by its URL slug.
+ *
+ * @param {string} slug
+ * @returns {Promise<{id: string, name: string, slug: string, created_at: string} | null>}
+ *   the trip row, or null if no trip has that slug (unknown link).
+ */
+export async function getTripBySlug(slug) {
+  const { data, error } = await supabase
+    .from('trips')
+    .select('*')
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (error) throw error
+  return data
+}

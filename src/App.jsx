@@ -1,13 +1,13 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
-import TripDashboard from './pages/TripDashboard'
+import TripPage from './pages/TripPage'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/t/:slug" element={<TripDashboard />} />
+        <Route path="/t/:slug" element={<TripPage />} />
       </Routes>
     </BrowserRouter>
   )
