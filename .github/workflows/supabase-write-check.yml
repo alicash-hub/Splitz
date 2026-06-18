@@ -1,0 +1,32 @@
+name: Supabase write check
+
+# Exercises the real CRUD path (create trip -> add member -> add expense ->
+# read back) against the live database, then cleans up after itself. Uses the
+# same repo secrets as the connection check.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - claude/create-claude-md-ellsz9
+    paths:
+      - .github/workflows/supabase-write-check.yml
+      - scripts/check-write.mjs
+
+jobs:
+  write-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run write check
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: node scripts/check-write.mjs
