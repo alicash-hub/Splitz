@@ -6,11 +6,12 @@ import BalanceCard from '../components/BalanceCard'
 import SettlementSection from '../components/SettlementSection'
 import ExpenseCard from '../components/ExpenseCard'
 import AddExpenseButton from '../components/AddExpenseButton'
+import AddExpense from '../components/AddExpense'
 
-export default function TripDashboard({ trip }) {
+export default function TripDashboard({ trip, memberId }) {
   const tripName = trip?.name ?? 'Trip'
 
-  const { members, expenses, loading } = useTripData(trip?.id)
+  const { members, expenses, loading, refreshExpenses } = useTripData(trip?.id)
   const [showAdd, setShowAdd] = useState(false)
 
   const balances = useMemo(
@@ -85,30 +86,13 @@ export default function TripDashboard({ trip }) {
       <AddExpenseButton onClick={() => setShowAdd(true)} />
 
       {showAdd && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-30 flex items-end justify-center bg-black/30 p-4 sm:items-center"
-          onClick={() => setShowAdd(false)}
-        >
-          <div
-            className="w-full max-w-md rounded-card bg-bg p-6 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-lg font-semibold text-text">Add expense</h2>
-            <p className="mt-2 text-text-muted">
-              Coming next — this is where you’ll log who paid, how much, and what
-              it was for.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowAdd(false)}
-              className="mt-6 w-full rounded-card border border-black/10 bg-bg px-4 py-3 text-base font-medium text-text transition hover:bg-surface"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <AddExpense
+          trip={trip}
+          members={members}
+          currentMemberId={memberId}
+          onClose={() => setShowAdd(false)}
+          onAdded={refreshExpenses}
+        />
       )}
     </>
   )

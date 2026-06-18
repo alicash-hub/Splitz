@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { listMembers } from '../lib/members'
 import { listExpenses } from '../lib/expenses'
@@ -9,7 +9,7 @@ import { listExpenses } from '../lib/expenses'
  * adds an expense or joins.
  *
  * @param {string} tripId
- * @returns {{ members: Array, expenses: Array, loading: boolean, error: Error|null }}
+ * @returns {{ members: Array, expenses: Array, loading: boolean, error: Error|null, refreshExpenses: () => Promise<void> }}
  */
 export function useTripData(tripId) {
   const [members, setMembers] = useState([])
@@ -17,53 +17,53 @@ export function useTripData(tripId) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  const refreshMembers = useCallback(async () => {
+    if (!tripId) return
+    try {
+      setMembers(await listMembers(tripId))
+    } catch (err) {
+      setError(err)
+    }
+  }, [tripId])
+
+  const refreshExpenses = useCallback(async () => {
+    if (!tripId) return
+    try {
+      setExpenses(await listExpenses(tripId))
+    } catch (err) {
+      setError(err)
+    }
+  }, [tripId])
+
   useEffect(() => {
     if (!tripId) return
     let active = true
+    setLoading(true)
 
-    async function loadAll() {
-      try {
-        const [m, e] = await Promise.all([
-          listMembers(tripId),
-          listExpenses(tripId),
-        ])
+    Promise.all([listMembers(tripId), listExpenses(tripId)])
+      .then(([m, e]) => {
         if (!active) return
         setMembers(m)
         setExpenses(e)
-      } catch (err) {
+      })
+      .catch((err) => {
         if (active) setError(err)
-      } finally {
+      })
+      .finally(() => {
         if (active) setLoading(false)
-      }
-    }
-
-    loadAll()
+      })
 
     const channel = supabase
       .channel(`trip-${tripId}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'members', filter: `trip_id=eq.${tripId}` },
-        async () => {
-          try {
-            const m = await listMembers(tripId)
-            if (active) setMembers(m)
-          } catch {
-            /* keep last good data on a refetch hiccup */
-          }
-        },
+        () => refreshMembers(),
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'expenses', filter: `trip_id=eq.${tripId}` },
-        async () => {
-          try {
-            const e = await listExpenses(tripId)
-            if (active) setExpenses(e)
-          } catch {
-            /* keep last good data on a refetch hiccup */
-          }
-        },
+        () => refreshExpenses(),
       )
       .subscribe()
 
@@ -71,7 +71,7 @@ export function useTripData(tripId) {
       active = false
       supabase.removeChannel(channel)
     }
-  }, [tripId])
+  }, [tripId, refreshMembers, refreshExpenses])
 
-  return { members, expenses, loading, error }
+  return { members, expenses, loading, error, refreshExpenses }
 }

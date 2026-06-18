@@ -16,3 +16,27 @@ export async function listExpenses(tripId) {
   if (error) throw error
   return data ?? []
 }
+
+/**
+ * Add an expense to a trip. Amount is in EGP and must be > 0 (enforced by a DB
+ * check as well). Description is optional and stored as null when blank.
+ *
+ * @param {string} tripId
+ * @param {{ paidBy: string, amount: number, description?: string }} fields
+ * @returns {Promise<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, created_at: string}>}
+ */
+export async function addExpense(tripId, { paidBy, amount, description }) {
+  const { data, error } = await supabase
+    .from('expenses')
+    .insert({
+      trip_id: tripId,
+      paid_by: paidBy,
+      amount,
+      description: description?.trim() || null,
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
