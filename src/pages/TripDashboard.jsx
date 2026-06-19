@@ -1,18 +1,48 @@
 import { useMemo, useState } from 'react'
 import { useTripData } from '../hooks/useTripData'
 import { computeBalances, minimizeTransfers } from '../lib/settlement'
+import { clearCachedMemberId } from '../lib/identity'
 import MemberInitials from '../components/MemberInitials'
 import BalanceCard from '../components/BalanceCard'
 import SettlementSection from '../components/SettlementSection'
 import ExpenseCard from '../components/ExpenseCard'
+import SwipeableRow from '../components/SwipeableRow'
 import AddExpenseButton from '../components/AddExpenseButton'
 import AddExpense from '../components/AddExpense'
+import MemberSheet from '../components/MemberSheet'
+import ExpenseSheet from '../components/ExpenseSheet'
 
 export default function TripDashboard({ trip, memberId }) {
   const tripName = trip?.name ?? 'Trip'
 
-  const { members, expenses, loading, refreshExpenses } = useTripData(trip?.id)
+  const { members, expenses, loading, refreshExpenses, refresh } = useTripData(
+    trip?.id,
+  )
   const [showAdd, setShowAdd] = useState(false)
+  const [selectedMember, setSelectedMember] = useState(null)
+  const [selectedExpense, setSelectedExpense] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [editingExpense, setEditingExpense] = useState(null)
+
+  function openExpense(expense, { confirm = false } = {}) {
+    setConfirmDelete(confirm)
+    setSelectedExpense(expense)
+  }
+
+  const selectedExpenseCount = useMemo(
+    () =>
+      selectedMember
+        ? expenses.filter((e) => e.paid_by === selectedMember.memberId).length
+        : 0,
+    [selectedMember, expenses],
+  )
+
+  function handleRemoved(removed) {
+    // If you removed yourself, drop the cached identity so a reload re-prompts.
+    if (removed.id === memberId) clearCachedMemberId(trip.id)
+    setSelectedMember(null)
+    refresh()
+  }
 
   const balances = useMemo(
     () => computeBalances(members, expenses),
@@ -54,7 +84,12 @@ export default function TripDashboard({ trip, memberId }) {
           </h2>
           <div className="flex flex-col gap-2">
             {balances.map((b) => (
-              <BalanceCard key={b.memberId} name={b.name} net={b.net} />
+              <BalanceCard
+                key={b.memberId}
+                name={b.name}
+                net={b.net}
+                onSelect={() => setSelectedMember(b)}
+              />
             ))}
           </div>
         </section>
@@ -72,11 +107,39 @@ export default function TripDashboard({ trip, memberId }) {
           ) : (
             <div className="flex flex-col gap-2">
               {expenses.map((expense) => (
-                <ExpenseCard
+                <SwipeableRow
                   key={expense.id}
-                  expense={expense}
-                  payerName={memberNameById.get(expense.paid_by) ?? 'Someone'}
-                />
+                  actions={({ close }) => (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          close()
+                          setEditingExpense(expense)
+                        }}
+                        className="flex flex-1 items-center justify-center bg-text-muted text-sm font-semibold text-white"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          close()
+                          openExpense(expense, { confirm: true })
+                        }}
+                        className="flex flex-1 items-center justify-center bg-negative text-sm font-semibold text-white"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                >
+                  <ExpenseCard
+                    expense={expense}
+                    payerName={memberNameById.get(expense.paid_by) ?? 'Someone'}
+                    onSelect={() => openExpense(expense)}
+                  />
+                </SwipeableRow>
               ))}
             </div>
           )}
@@ -91,7 +154,45 @@ export default function TripDashboard({ trip, memberId }) {
           members={members}
           currentMemberId={memberId}
           onClose={() => setShowAdd(false)}
-          onAdded={refreshExpenses}
+          onSaved={refreshExpenses}
+        />
+      )}
+
+      {editingExpense && (
+        <AddExpense
+          trip={trip}
+          members={members}
+          currentMemberId={memberId}
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSaved={refreshExpenses}
+        />
+      )}
+
+      {selectedMember && (
+        <MemberSheet
+          member={{ id: selectedMember.memberId, name: selectedMember.name }}
+          net={selectedMember.net}
+          expenseCount={selectedExpenseCount}
+          onClose={() => setSelectedMember(null)}
+          onRemoved={handleRemoved}
+        />
+      )}
+
+      {selectedExpense && (
+        <ExpenseSheet
+          expense={selectedExpense}
+          payerName={memberNameById.get(selectedExpense.paid_by) ?? 'Someone'}
+          initialConfirm={confirmDelete}
+          onClose={() => setSelectedExpense(null)}
+          onEdit={(exp) => {
+            setSelectedExpense(null)
+            setEditingExpense(exp)
+          }}
+          onDeleted={() => {
+            setSelectedExpense(null)
+            refreshExpenses()
+          }}
         />
       )}
     </>

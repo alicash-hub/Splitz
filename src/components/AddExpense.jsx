@@ -1,23 +1,29 @@
 import { useState } from 'react'
-import { addExpense } from '../lib/expenses'
+import { addExpense, updateExpense } from '../lib/expenses'
 import { initials } from '../lib/format'
 
-// Bottom sheet (mobile) / centered modal (larger screens) for logging an expense.
+// Bottom sheet (mobile) / centered modal (larger screens) for logging or editing
+// an expense. Pass `expense` to edit it; omit to add a new one.
 export default function AddExpense({
   trip,
   members,
   currentMemberId,
+  expense,
   onClose,
-  onAdded,
+  onSaved,
 }) {
+  const isEdit = Boolean(expense)
+
   const defaultPayer =
     currentMemberId && members.some((m) => m.id === currentMemberId)
       ? currentMemberId
       : (members[0]?.id ?? null)
 
-  const [paidBy, setPaidBy] = useState(defaultPayer)
-  const [amountStr, setAmountStr] = useState('')
-  const [description, setDescription] = useState('')
+  const [paidBy, setPaidBy] = useState(isEdit ? expense.paid_by : defaultPayer)
+  const [amountStr, setAmountStr] = useState(isEdit ? String(expense.amount) : '')
+  const [description, setDescription] = useState(
+    isEdit ? (expense.description ?? '') : '',
+  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -31,16 +37,24 @@ export default function AddExpense({
 
     setSubmitting(true)
     setError('')
+    const fields = {
+      paidBy,
+      amount: Math.round(amount * 100) / 100,
+      description,
+    }
     try {
-      await addExpense(trip.id, {
-        paidBy,
-        amount: Math.round(amount * 100) / 100,
-        description,
-      })
-      onAdded?.()
+      if (isEdit) {
+        await updateExpense(expense.id, fields)
+      } else {
+        await addExpense(trip.id, fields)
+      }
+      onSaved?.()
       onClose()
     } catch (err) {
-      setError(err.message ?? 'Could not add the expense. Please try again.')
+      setError(
+        err.message ??
+          `Could not ${isEdit ? 'save' : 'add'} the expense. Please try again.`,
+      )
       setSubmitting(false)
     }
   }
@@ -49,7 +63,7 @@ export default function AddExpense({
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Add expense"
+      aria-label={isEdit ? 'Edit expense' : 'Add expense'}
       className="animate-overlay fixed inset-0 z-30 flex items-end justify-center bg-black/30 sm:items-center sm:p-4"
       onClick={onClose}
     >
@@ -59,7 +73,9 @@ export default function AddExpense({
       >
         <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-black/10 sm:hidden" />
 
-        <h2 className="text-lg font-semibold text-text">Add expense</h2>
+        <h2 className="text-lg font-semibold text-text">
+          {isEdit ? 'Edit expense' : 'Add expense'}
+        </h2>
 
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-5">
           {/* Who paid */}
@@ -153,7 +169,13 @@ export default function AddExpense({
               disabled={!canSubmit}
               className="flex-1 rounded-card bg-accent px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {submitting ? 'Adding…' : 'Add'}
+              {submitting
+                ? isEdit
+                  ? 'Saving…'
+                  : 'Adding…'
+                : isEdit
+                  ? 'Save'
+                  : 'Add'}
             </button>
           </div>
         </form>
