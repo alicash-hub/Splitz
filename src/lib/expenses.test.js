@@ -3,12 +3,25 @@ import { describe, expect, it, vi, beforeEach } from 'vitest'
 // Capture the row passed to insert so we can assert on normalization.
 const single = vi.fn()
 const insert = vi.fn(() => ({ select: () => ({ single }) }))
+const updatePayload = vi.fn()
+const update = vi.fn(() => ({
+  eq: () => ({ select: () => ({ single }) }),
+}))
 const eqDelete = vi.fn()
 vi.mock('./supabaseClient', () => ({
-  supabase: { from: () => ({ insert, delete: () => ({ eq: eqDelete }) }) },
+  supabase: {
+    from: () => ({
+      insert,
+      update: (payload) => {
+        updatePayload(payload)
+        return update(payload)
+      },
+      delete: () => ({ eq: eqDelete }),
+    }),
+  },
 }))
 
-const { addExpense, deleteExpense } = await import('./expenses')
+const { addExpense, updateExpense, deleteExpense } = await import('./expenses')
 
 describe('addExpense', () => {
   beforeEach(() => {
@@ -37,6 +50,40 @@ describe('addExpense', () => {
     single.mockResolvedValue({ data: null, error })
     await expect(
       addExpense('t1', { paidBy: 'm1', amount: 10 }),
+    ).rejects.toBe(error)
+  })
+})
+
+describe('updateExpense', () => {
+  beforeEach(() => {
+    updatePayload.mockClear()
+    single.mockReset()
+    single.mockResolvedValue({ data: { id: 'e1' }, error: null })
+  })
+
+  it('updates payer, amount and trimmed description', async () => {
+    await updateExpense('e1', {
+      paidBy: 'm2',
+      amount: 80,
+      description: '  Coffee  ',
+    })
+    expect(updatePayload).toHaveBeenCalledWith({
+      paid_by: 'm2',
+      amount: 80,
+      description: 'Coffee',
+    })
+  })
+
+  it('stores a blank description as null', async () => {
+    await updateExpense('e1', { paidBy: 'm2', amount: 80, description: '  ' })
+    expect(updatePayload.mock.calls[0][0].description).toBeNull()
+  })
+
+  it('throws when Supabase returns an error', async () => {
+    const error = new Error('update failed')
+    single.mockResolvedValue({ data: null, error })
+    await expect(
+      updateExpense('e1', { paidBy: 'm2', amount: 80 }),
     ).rejects.toBe(error)
   })
 })

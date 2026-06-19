@@ -4,7 +4,13 @@ import { deleteExpense } from '../lib/expenses'
 
 // Expense options sheet. Deleting takes a deliberate second step so it isn't a
 // one-tap mistake; balances recompute from whatever's left.
-export default function ExpenseSheet({ expense, payerName, onClose, onDeleted }) {
+export default function ExpenseSheet({
+  expense,
+  payerName,
+  onClose,
+  onEdit,
+  onDeleted,
+}) {
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
@@ -57,6 +63,13 @@ export default function ExpenseSheet({ expense, payerName, onClose, onDeleted })
 
         {!confirming ? (
           <div className="mt-6 flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => onEdit(expense)}
+              className="w-full rounded-card bg-accent px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-hover"
+            >
+              Edit expense
+            </button>
             <button
               type="button"
               onClick={() => setConfirming(true)}

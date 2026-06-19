@@ -20,6 +20,7 @@ export default function TripDashboard({ trip, memberId }) {
   const [showAdd, setShowAdd] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
   const [selectedExpense, setSelectedExpense] = useState(null)
+  const [editingExpense, setEditingExpense] = useState(null)
 
   const selectedExpenseCount = useMemo(
     () =>
@@ -119,7 +120,18 @@ export default function TripDashboard({ trip, memberId }) {
           members={members}
           currentMemberId={memberId}
           onClose={() => setShowAdd(false)}
-          onAdded={refreshExpenses}
+          onSaved={refreshExpenses}
+        />
+      )}
+
+      {editingExpense && (
+        <AddExpense
+          trip={trip}
+          members={members}
+          currentMemberId={memberId}
+          expense={editingExpense}
+          onClose={() => setEditingExpense(null)}
+          onSaved={refreshExpenses}
         />
       )}
 
@@ -138,6 +150,10 @@ export default function TripDashboard({ trip, memberId }) {
           expense={selectedExpense}
           payerName={memberNameById.get(selectedExpense.paid_by) ?? 'Someone'}
           onClose={() => setSelectedExpense(null)}
+          onEdit={(exp) => {
+            setSelectedExpense(null)
+            setEditingExpense(exp)
+          }}
           onDeleted={() => {
             setSelectedExpense(null)
             refreshExpenses()

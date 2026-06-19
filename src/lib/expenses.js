@@ -42,6 +42,29 @@ export async function addExpense(tripId, { paidBy, amount, description }) {
 }
 
 /**
+ * Update an expense's payer, amount and/or description.
+ *
+ * @param {string} expenseId
+ * @param {{ paidBy: string, amount: number, description?: string }} fields
+ * @returns {Promise<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, created_at: string}>}
+ */
+export async function updateExpense(expenseId, { paidBy, amount, description }) {
+  const { data, error } = await supabase
+    .from('expenses')
+    .update({
+      paid_by: paidBy,
+      amount,
+      description: description?.trim() || null,
+    })
+    .eq('id', expenseId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+/**
  * Delete an expense. Balances recompute from whatever's left.
  *
  * @param {string} expenseId
