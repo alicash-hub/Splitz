@@ -6,6 +6,7 @@ import MemberInitials from '../components/MemberInitials'
 import BalanceCard from '../components/BalanceCard'
 import SettlementSection from '../components/SettlementSection'
 import ExpenseCard from '../components/ExpenseCard'
+import SwipeableRow from '../components/SwipeableRow'
 import AddExpenseButton from '../components/AddExpenseButton'
 import AddExpense from '../components/AddExpense'
 import MemberSheet from '../components/MemberSheet'
@@ -20,7 +21,13 @@ export default function TripDashboard({ trip, memberId }) {
   const [showAdd, setShowAdd] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
   const [selectedExpense, setSelectedExpense] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
   const [editingExpense, setEditingExpense] = useState(null)
+
+  function openExpense(expense, { confirm = false } = {}) {
+    setConfirmDelete(confirm)
+    setSelectedExpense(expense)
+  }
 
   const selectedExpenseCount = useMemo(
     () =>
@@ -100,12 +107,39 @@ export default function TripDashboard({ trip, memberId }) {
           ) : (
             <div className="flex flex-col gap-2">
               {expenses.map((expense) => (
-                <ExpenseCard
+                <SwipeableRow
                   key={expense.id}
-                  expense={expense}
-                  payerName={memberNameById.get(expense.paid_by) ?? 'Someone'}
-                  onSelect={() => setSelectedExpense(expense)}
-                />
+                  actions={({ close }) => (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          close()
+                          setEditingExpense(expense)
+                        }}
+                        className="flex flex-1 items-center justify-center bg-text-muted text-sm font-semibold text-white"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          close()
+                          openExpense(expense, { confirm: true })
+                        }}
+                        className="flex flex-1 items-center justify-center bg-negative text-sm font-semibold text-white"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                >
+                  <ExpenseCard
+                    expense={expense}
+                    payerName={memberNameById.get(expense.paid_by) ?? 'Someone'}
+                    onSelect={() => openExpense(expense)}
+                  />
+                </SwipeableRow>
               ))}
             </div>
           )}
@@ -149,6 +183,7 @@ export default function TripDashboard({ trip, memberId }) {
         <ExpenseSheet
           expense={selectedExpense}
           payerName={memberNameById.get(selectedExpense.paid_by) ?? 'Someone'}
+          initialConfirm={confirmDelete}
           onClose={() => setSelectedExpense(null)}
           onEdit={(exp) => {
             setSelectedExpense(null)

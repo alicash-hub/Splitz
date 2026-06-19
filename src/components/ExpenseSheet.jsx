@@ -7,11 +7,12 @@ import { deleteExpense } from '../lib/expenses'
 export default function ExpenseSheet({
   expense,
   payerName,
+  initialConfirm = false,
   onClose,
   onEdit,
   onDeleted,
 }) {
-  const [confirming, setConfirming] = useState(false)
+  const [confirming, setConfirming] = useState(initialConfirm)
   const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState('')
 
