@@ -40,3 +40,13 @@ export async function addExpense(tripId, { paidBy, amount, description }) {
   if (error) throw error
   return data
 }
+
+/**
+ * Delete an expense. Balances recompute from whatever's left.
+ *
+ * @param {string} expenseId
+ */
+export async function deleteExpense(expenseId) {
+  const { error } = await supabase.from('expenses').delete().eq('id', expenseId)
+  if (error) throw error
+}

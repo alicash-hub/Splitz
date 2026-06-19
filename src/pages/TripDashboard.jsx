@@ -9,6 +9,7 @@ import ExpenseCard from '../components/ExpenseCard'
 import AddExpenseButton from '../components/AddExpenseButton'
 import AddExpense from '../components/AddExpense'
 import MemberSheet from '../components/MemberSheet'
+import ExpenseSheet from '../components/ExpenseSheet'
 
 export default function TripDashboard({ trip, memberId }) {
   const tripName = trip?.name ?? 'Trip'
@@ -18,6 +19,7 @@ export default function TripDashboard({ trip, memberId }) {
   )
   const [showAdd, setShowAdd] = useState(false)
   const [selectedMember, setSelectedMember] = useState(null)
+  const [selectedExpense, setSelectedExpense] = useState(null)
 
   const selectedExpenseCount = useMemo(
     () =>
@@ -101,6 +103,7 @@ export default function TripDashboard({ trip, memberId }) {
                   key={expense.id}
                   expense={expense}
                   payerName={memberNameById.get(expense.paid_by) ?? 'Someone'}
+                  onSelect={() => setSelectedExpense(expense)}
                 />
               ))}
             </div>
@@ -127,6 +130,18 @@ export default function TripDashboard({ trip, memberId }) {
           expenseCount={selectedExpenseCount}
           onClose={() => setSelectedMember(null)}
           onRemoved={handleRemoved}
+        />
+      )}
+
+      {selectedExpense && (
+        <ExpenseSheet
+          expense={selectedExpense}
+          payerName={memberNameById.get(selectedExpense.paid_by) ?? 'Someone'}
+          onClose={() => setSelectedExpense(null)}
+          onDeleted={() => {
+            setSelectedExpense(null)
+            refreshExpenses()
+          }}
         />
       )}
     </>
