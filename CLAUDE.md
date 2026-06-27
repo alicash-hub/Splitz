@@ -136,33 +136,41 @@ thing people get wrong by hand.
 
 ## Design direction
 
-Inspiration: **Airbnb.** Clean, minimal, generous whitespace, trustworthy.
+Theme: **Azure** — a Duolingo-flavored sky-blue look on an Airbnb-clean structure:
+friendly, trustworthy, mobile-first. Design tokens live in `@theme` in
+`src/index.css`.
 
 - **Mobile-first** — portrait, one-thumb reachable. Primary "Add expense" action
   is bottom-anchored (FAB-style), always visible.
 - **Cards** are the primary UI pattern — one card per expense, one per balance.
-- **Typography:** Inter or system fonts. Clear hierarchy: one big number,
+- **Typography:** **Plus Jakarta Sans** (`--font-display`) for headings and big
+  numbers (weight 800); **Nunito** (`--font-sans`) for body. One big number,
   supporting text below.
-- **Soft, rounded UI:** 8–12px corner radius, subtle shadows.
+- **Chunky offset shadows** instead of blurry drop shadows: hero `0 4px 0`,
+  buttons `0 3px 0` (with an `active:translate-y` press), cards `0 2px 0`, all in
+  the relevant `*-shadow` token. Corner radius is 18px (`--radius-card`).
 - **No clutter:** no sidebars, nav menus, or settings pages in MVP.
 - **Friendly micro-copy:** "Who paid?", "What was it for?", "Here's where
   everyone stands".
 
-### Palette
+### Palette (Azure)
 
-- Background: `#FFFFFF` / `#F7F7F7`
-- Text: `#222222` (primary), `#717171` (secondary)
-- Accent: one warm color for CTAs/highlights (coral or teal — pick one and keep it)
-- Positive balance (gets money back): green
-- Negative balance (owes): soft red/coral
-- Cards: white with subtle `box-shadow`
+- Background: `#FFFFFF` (`--color-bg`) / `#F4F8FB` blue-tinted surface (`--color-surface`)
+- Text: `#1D2A3A` (`--color-text`), `#9AACC0` muted (`--color-text-muted`)
+- Border / card offset-shadow: `#E7EDF3` (`--color-border`)
+- Chip (avatar/emoji tiles): `#DCEFFF` (`--color-chip`)
+- Accent (brand blue, CTAs): `#1CB0F6` (`--color-accent`), darker `#1483CC` for
+  hover/shadow; secondary violet `#7B61FF` (`--color-accent2`) for links like "Copy"
+- **Balance semantics: positive (owed / gets back) = brand BLUE** (`--color-positive`,
+  same as accent); **negative (owes) = red** `#FF5A5F` (`--color-negative`)
+- Cards: white with a chunky border + offset shadow (no blurry box-shadow)
 
 ### Key screens
 
 1. **Home / Create trip** — app name, trip-name field, "Start a new trip". Nothing else.
 2. **Trip dashboard** — trip name, member initials row, per-person balances
-   (green/red), settle-up section (copyable minimum transfers), expense list,
-   floating "Add expense".
+   (blue = owed / red = owes), settle-up section (copyable minimum transfers),
+   expense list, floating "Add expense".
 3. **Add expense** (bottom sheet/modal) — who paid, amount, description, "Add".
 4. **Join trip** — trip name, "What's your name?", "Join"; or "Already here? Pick
    your name" with confirmation.

@@ -4,19 +4,19 @@ import { formatEGP, formatWhen, initials } from '../lib/format'
 // expense options) when an onSelect handler is provided.
 export default function ExpenseCard({ expense, payerName, onSelect }) {
   const base =
-    'flex w-full items-center gap-3 rounded-card border border-black/5 bg-bg p-4 text-left shadow-sm'
+    'flex w-full items-center gap-3 rounded-card border border-[var(--color-border)] bg-bg p-4 text-left shadow-[0_2px_0_var(--color-border)]'
 
   const inner = (
     <>
       <div
         title={payerName}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-sm font-semibold text-text"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chip text-sm font-bold text-text"
       >
         {initials(payerName)}
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium text-text">
+        <p className="truncate font-bold text-text">
           {expense.description?.trim() || 'Expense'}
         </p>
         <p className="truncate text-sm text-text-muted">
@@ -24,7 +24,7 @@ export default function ExpenseCard({ expense, payerName, onSelect }) {
         </p>
       </div>
 
-      <span className="shrink-0 font-semibold text-text">
+      <span className="shrink-0 font-display font-extrabold text-text">
         {formatEGP(expense.amount)}
       </span>
     </>
@@ -38,7 +38,7 @@ export default function ExpenseCard({ expense, payerName, onSelect }) {
     <button
       type="button"
       onClick={onSelect}
-      className={`${base} transition hover:border-accent/60`}
+      className={`${base} transition hover:border-accent`}
     >
       {inner}
       <span aria-hidden className="-ml-1 shrink-0 text-text-muted">

@@ -25,8 +25,10 @@ export default function SettlementSection({ tripName, transfers }) {
   if (transfers.length === 0) {
     return (
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-text">Settle up</h2>
-        <div className="rounded-card border border-black/5 bg-bg p-4 text-center text-text-muted shadow-sm">
+        <h2 className="mb-3 font-display text-lg font-bold text-text">
+          Settle up
+        </h2>
+        <div className="rounded-card border border-[var(--color-border)] bg-bg p-4 text-center font-semibold text-text-muted shadow-[0_2px_0_var(--color-border)]">
           All settled up 🎉
         </div>
       </section>
@@ -36,11 +38,11 @@ export default function SettlementSection({ tripName, transfers }) {
   return (
     <section>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-text">Settle up</h2>
+        <h2 className="font-display text-lg font-bold text-text">Settle up</h2>
         <button
           type="button"
           onClick={handleCopy}
-          className="rounded-full border border-black/10 bg-bg px-3 py-1.5 text-sm font-medium text-text transition hover:border-accent/60"
+          className="rounded-full border border-[var(--color-border)] bg-bg px-3 py-1.5 text-sm font-bold text-accent2 transition hover:border-accent2"
         >
           {copied ? 'Copied!' : 'Copy for WhatsApp'}
         </button>
@@ -50,14 +52,14 @@ export default function SettlementSection({ tripName, transfers }) {
         {transfers.map((t, i) => (
           <li
             key={`${t.fromId}-${t.toId}-${i}`}
-            className="flex items-center justify-between rounded-card border border-black/5 bg-bg p-4 shadow-sm"
+            className="flex items-center justify-between rounded-card border border-[var(--color-border)] bg-bg p-4 shadow-[0_2px_0_var(--color-border)]"
           >
             <span className="min-w-0 truncate text-text">
-              <span className="font-medium">{t.fromName}</span>
+              <span className="font-bold">{t.fromName}</span>
               <span className="text-text-muted"> → </span>
-              <span className="font-medium">{t.toName}</span>
+              <span className="font-bold">{t.toName}</span>
             </span>
-            <span className="shrink-0 font-semibold text-text">
+            <span className="shrink-0 font-display font-extrabold text-text">
               {formatEGP(t.amount)}
             </span>
           </li>

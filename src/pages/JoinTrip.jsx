@@ -50,17 +50,17 @@ export default function JoinTrip({ trip, onJoined }) {
   return (
     <main className="mx-auto flex min-h-full max-w-md flex-col justify-center px-6 py-12">
       <header className="mb-10 text-center">
-        <p className="text-sm font-medium uppercase tracking-wide text-text-muted">
+        <p className="text-sm font-bold uppercase tracking-wide text-text-muted">
           Joining
         </p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-text">
+        <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-text">
           {trip.name}
         </h1>
       </header>
 
       <form onSubmit={handleJoin} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <label htmlFor="member-name" className="text-sm font-medium text-text">
+          <label htmlFor="member-name" className="text-sm font-bold text-text">
             What's your name?
           </label>
           <input
@@ -72,12 +72,12 @@ export default function JoinTrip({ trip, onJoined }) {
             autoFocus
             autoComplete="off"
             maxLength={80}
-            className="w-full rounded-card border border-black/10 bg-bg px-4 py-3 text-base text-text shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
+            className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base text-text shadow-[0_2px_0_var(--color-border)] outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-negative">
+          <p role="alert" className="text-sm font-semibold text-negative">
             {error}
           </p>
         )}
@@ -85,7 +85,7 @@ export default function JoinTrip({ trip, onJoined }) {
         <button
           type="submit"
           disabled={!canSubmit}
-          className="mt-2 w-full rounded-card bg-accent px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 w-full rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? 'Joining…' : 'Join'}
         </button>
@@ -93,7 +93,9 @@ export default function JoinTrip({ trip, onJoined }) {
 
       {!loadingMembers && members.length > 0 && (
         <section className="mt-10">
-          <h2 className="text-sm font-medium text-text">Already here?</h2>
+          <h2 className="font-display text-sm font-bold text-text">
+            Already here?
+          </h2>
           <p className="mt-1 text-sm text-text-muted">
             Pick your name to continue.
           </p>
@@ -107,7 +109,7 @@ export default function JoinTrip({ trip, onJoined }) {
                     setError('')
                     setSelectedMember(member)
                   }}
-                  className="w-full rounded-card border border-black/10 bg-bg px-4 py-3 text-left text-base text-text shadow-sm transition hover:border-accent/60"
+                  className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-left text-base font-semibold text-text shadow-[0_2px_0_var(--color-border)] transition hover:border-accent active:translate-y-[1px] active:shadow-[0_1px_0_var(--color-border)]"
                 >
                   {member.name}
                 </button>
@@ -121,30 +123,32 @@ export default function JoinTrip({ trip, onJoined }) {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-10 flex items-end justify-center bg-black/30 p-4 sm:items-center"
+          className="animate-overlay fixed inset-0 z-10 flex items-end justify-center bg-black/30 p-4 sm:items-center"
           onClick={() => setSelectedMember(null)}
         >
           <div
-            className="w-full max-w-md rounded-card bg-bg p-6 shadow-lg"
+            className="animate-sheet w-full max-w-md rounded-card bg-bg p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-lg text-text">
               You're continuing as{' '}
-              <span className="font-semibold">{selectedMember.name}</span> — is
-              that right?
+              <span className="font-display font-extrabold">
+                {selectedMember.name}
+              </span>{' '}
+              — is that right?
             </p>
             <div className="mt-6 flex gap-3">
               <button
                 type="button"
                 onClick={() => setSelectedMember(null)}
-                className="flex-1 rounded-card border border-black/10 bg-bg px-4 py-3 text-base font-medium text-text transition hover:bg-surface"
+                className="flex-1 rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base font-bold text-text shadow-[0_2px_0_var(--color-border)] transition hover:bg-surface active:translate-y-[1px] active:shadow-[0_1px_0_var(--color-border)]"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => onJoined(selectedMember)}
-                className="flex-1 rounded-card bg-accent px-4 py-3 text-base font-semibold text-white transition hover:bg-accent-hover"
+                className="flex-1 rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)]"
               >
                 Yes, that's me
               </button>

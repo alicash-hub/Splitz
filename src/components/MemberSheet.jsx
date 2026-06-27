@@ -36,10 +36,12 @@ export default function MemberSheet({ member, net, expenseCount, onClose, onRemo
         className="animate-sheet w-full max-w-md rounded-t-2xl bg-bg p-6 shadow-lg sm:rounded-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-black/10 sm:hidden" />
+        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[var(--color-border)] sm:hidden" />
 
-        <h2 className="text-lg font-semibold text-text">{member.name}</h2>
-        <p className="mt-1 text-sm text-text-muted">
+        <h2 className="font-display text-lg font-extrabold text-text">
+          {member.name}
+        </h2>
+        <p className="mt-1 text-sm font-semibold text-text-muted">
           {settled
             ? 'Settled up'
             : net > 0
@@ -48,7 +50,7 @@ export default function MemberSheet({ member, net, expenseCount, onClose, onRemo
         </p>
 
         {error && (
-          <p role="alert" className="mt-4 text-sm text-negative">
+          <p role="alert" className="mt-4 text-sm font-semibold text-negative">
             {error}
           </p>
         )}
@@ -58,14 +60,14 @@ export default function MemberSheet({ member, net, expenseCount, onClose, onRemo
             <button
               type="button"
               onClick={() => setConfirming(true)}
-              className="w-full rounded-card border border-negative/30 px-4 py-3 text-base font-medium text-negative transition hover:bg-negative/5"
+              className="w-full rounded-card border border-negative/40 px-4 py-3 text-base font-bold text-negative transition hover:bg-negative/5"
             >
               Remove from trip
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="w-full rounded-card border border-black/10 bg-bg px-4 py-3 text-base font-medium text-text transition hover:bg-surface"
+              className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base font-bold text-text shadow-[0_2px_0_var(--color-border)] transition hover:bg-surface active:translate-y-[1px] active:shadow-[0_1px_0_var(--color-border)]"
             >
               Close
             </button>
@@ -73,9 +75,9 @@ export default function MemberSheet({ member, net, expenseCount, onClose, onRemo
         ) : (
           <div className="mt-6">
             <p className="text-text">
-              Remove <span className="font-semibold">{member.name}</span>? This
+              Remove <span className="font-extrabold">{member.name}</span>? This
               also deletes{' '}
-              <span className="font-semibold">
+              <span className="font-extrabold">
                 {expenseCount} {expenseCount === 1 ? 'expense' : 'expenses'}
               </span>{' '}
               they paid for, and everyone&apos;s balance will recalculate. This
@@ -86,7 +88,7 @@ export default function MemberSheet({ member, net, expenseCount, onClose, onRemo
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={removing}
-                className="flex-1 rounded-card border border-black/10 bg-bg px-4 py-3 text-base font-medium text-text transition hover:bg-surface disabled:opacity-50"
+                className="flex-1 rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base font-bold text-text shadow-[0_2px_0_var(--color-border)] transition hover:bg-surface disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -94,7 +96,7 @@ export default function MemberSheet({ member, net, expenseCount, onClose, onRemo
                 type="button"
                 onClick={handleRemove}
                 disabled={removing}
-                className="flex-1 rounded-card bg-negative px-4 py-3 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-card bg-negative px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-negative-shadow)] transition hover:opacity-90 active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-negative-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {removing ? 'Removing…' : 'Remove'}
               </button>

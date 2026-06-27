@@ -56,7 +56,9 @@ export default function TripPage() {
   if (notFound) {
     return (
       <main className="mx-auto flex min-h-full max-w-md flex-col justify-center px-6 py-12 text-center">
-        <h1 className="text-2xl font-semibold text-text">Trip not found</h1>
+        <h1 className="font-display text-2xl font-extrabold text-text">
+          Trip not found
+        </h1>
         <p className="mt-3 text-text-muted">
           This trip link doesn't seem to exist. Double-check the link, or start a
           new trip.

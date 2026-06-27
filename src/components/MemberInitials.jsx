@@ -10,7 +10,7 @@ export default function MemberInitials({ members }) {
         <div
           key={member.id}
           title={member.name}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/5 bg-surface text-sm font-semibold text-text"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chip text-sm font-bold text-text"
         >
           {initials(member.name)}
         </div>

@@ -15,7 +15,7 @@ export default function BalanceCard({ name, net, onSelect }) {
 
   const amount = (
     <span className="text-right">
-      <span className={`block text-lg font-semibold ${amountColor}`}>
+      <span className={`block font-display text-lg font-extrabold ${amountColor}`}>
         {settled ? '—' : formatEGP(Math.abs(net))}
       </span>
       <span className="block text-xs text-text-muted">{label}</span>
@@ -23,12 +23,12 @@ export default function BalanceCard({ name, net, onSelect }) {
   )
 
   const base =
-    'flex w-full items-center justify-between rounded-card border border-black/5 bg-bg p-4 text-left shadow-sm'
+    'flex w-full items-center justify-between rounded-card border border-[var(--color-border)] bg-bg p-4 text-left shadow-[0_2px_0_var(--color-border)]'
 
   if (!onSelect) {
     return (
       <div className={base}>
-        <span className="font-medium text-text">{name}</span>
+        <span className="font-bold text-text">{name}</span>
         {amount}
       </div>
     )
@@ -38,9 +38,9 @@ export default function BalanceCard({ name, net, onSelect }) {
     <button
       type="button"
       onClick={onSelect}
-      className={`${base} transition hover:border-accent/60`}
+      className={`${base} transition hover:border-accent`}
     >
-      <span className="font-medium text-text">{name}</span>
+      <span className="font-bold text-text">{name}</span>
       <span className="flex items-center gap-2">
         {amount}
         <span aria-hidden className="text-text-muted">

@@ -66,7 +66,7 @@ export default function TripDashboard({ trip, memberId }) {
     <>
       <main className="mx-auto max-w-md px-6 pt-10 pb-28">
         <header className="mb-6">
-          <h1 className="text-3xl font-semibold tracking-tight text-text">
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-text">
             {tripName}
           </h1>
           <p className="mt-1 text-sm text-text-muted">
@@ -79,7 +79,7 @@ export default function TripDashboard({ trip, memberId }) {
         </div>
 
         <section className="mb-8">
-          <h2 className="mb-3 text-lg font-semibold text-text">
+          <h2 className="mb-3 font-display text-lg font-bold text-text">
             Where everyone stands
           </h2>
           <div className="flex flex-col gap-2">
@@ -99,9 +99,11 @@ export default function TripDashboard({ trip, memberId }) {
         </div>
 
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-text">Expenses</h2>
+          <h2 className="mb-3 font-display text-lg font-bold text-text">
+            Expenses
+          </h2>
           {expenses.length === 0 ? (
-            <div className="rounded-card border border-black/5 bg-bg p-6 text-center text-text-muted shadow-sm">
+            <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center font-semibold text-text-muted shadow-[0_2px_0_var(--color-border)]">
               No expenses yet. Tap “Add expense” to log the first one.
             </div>
           ) : (
@@ -117,7 +119,7 @@ export default function TripDashboard({ trip, memberId }) {
                           close()
                           setEditingExpense(expense)
                         }}
-                        className="flex flex-1 items-center justify-center bg-text-muted text-sm font-semibold text-white"
+                        className="flex flex-1 items-center justify-center bg-accent2 text-sm font-bold text-white"
                       >
                         Edit
                       </button>

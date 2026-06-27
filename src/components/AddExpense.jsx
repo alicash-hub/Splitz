@@ -71,16 +71,16 @@ export default function AddExpense({
         className="animate-sheet w-full max-w-md rounded-t-2xl bg-bg p-6 shadow-lg sm:rounded-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-black/10 sm:hidden" />
+        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[var(--color-border)] sm:hidden" />
 
-        <h2 className="text-lg font-semibold text-text">
+        <h2 className="font-display text-lg font-extrabold text-text">
           {isEdit ? 'Edit expense' : 'Add expense'}
         </h2>
 
         <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-5">
           {/* Who paid */}
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-text">Who paid?</span>
+            <span className="text-sm font-bold text-text">Who paid?</span>
             <div className="flex flex-wrap gap-2">
               {members.map((member) => {
                 const selected = member.id === paidBy
@@ -90,15 +90,15 @@ export default function AddExpense({
                     type="button"
                     onClick={() => setPaidBy(member.id)}
                     aria-pressed={selected}
-                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition ${
+                    className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-bold transition ${
                       selected
                         ? 'border-accent bg-accent text-white'
-                        : 'border-black/10 bg-bg text-text hover:border-accent/60'
+                        : 'border-[var(--color-border)] bg-bg text-text hover:border-accent'
                     }`}
                   >
                     <span
-                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${
-                        selected ? 'bg-white/20 text-white' : 'bg-surface text-text'
+                      className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
+                        selected ? 'bg-white/20 text-white' : 'bg-chip text-text'
                       }`}
                     >
                       {initials(member.name)}
@@ -112,11 +112,11 @@ export default function AddExpense({
 
           {/* Amount */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="expense-amount" className="text-sm font-medium text-text">
+            <label htmlFor="expense-amount" className="text-sm font-bold text-text">
               Amount
             </label>
             <div className="flex items-baseline gap-2">
-              <span className="text-lg font-medium text-text-muted">EGP</span>
+              <span className="text-lg font-bold text-text-muted">EGP</span>
               <input
                 id="expense-amount"
                 type="text"
@@ -128,14 +128,14 @@ export default function AddExpense({
                 placeholder="0"
                 autoFocus
                 autoComplete="off"
-                className="w-full bg-transparent text-4xl font-semibold text-text outline-none placeholder:text-black/20"
+                className="w-full bg-transparent font-display text-4xl font-extrabold text-text outline-none placeholder:text-[var(--color-text-muted)]/40"
               />
             </div>
           </div>
 
           {/* What for */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="expense-desc" className="text-sm font-medium text-text">
+            <label htmlFor="expense-desc" className="text-sm font-bold text-text">
               What for? <span className="text-text-muted">(optional)</span>
             </label>
             <input
@@ -146,12 +146,12 @@ export default function AddExpense({
               placeholder="e.g. Lunch at the resort"
               autoComplete="off"
               maxLength={120}
-              className="w-full rounded-card border border-black/10 bg-bg px-4 py-3 text-base text-text shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
+              className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base text-text shadow-[0_2px_0_var(--color-border)] outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
             />
           </div>
 
           {error && (
-            <p role="alert" className="text-sm text-negative">
+            <p role="alert" className="text-sm font-semibold text-negative">
               {error}
             </p>
           )}
@@ -160,14 +160,14 @@ export default function AddExpense({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-card border border-black/10 bg-bg px-4 py-3 text-base font-medium text-text transition hover:bg-surface"
+              className="flex-1 rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base font-bold text-text shadow-[0_2px_0_var(--color-border)] transition hover:bg-surface active:translate-y-[1px] active:shadow-[0_1px_0_var(--color-border)]"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!canSubmit}
-              className="flex-1 rounded-card bg-accent px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex-1 rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
             >
               {submitting
                 ? isEdit

@@ -6,7 +6,7 @@ export default function AddExpenseButton({ onClick }) {
       <button
         type="button"
         onClick={onClick}
-        className="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-4 text-base font-semibold text-white shadow-lg transition hover:bg-accent-hover"
+        className="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-full bg-accent px-6 py-4 text-base font-extrabold text-white shadow-[0_4px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_2px_0_var(--color-accent-shadow)]"
       >
         <span className="text-xl leading-none">+</span>
         Add expense

@@ -28,7 +28,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-full max-w-md flex-col justify-center px-6 py-12">
       <header className="mb-10 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight text-text">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight text-text">
           Bread &amp; Salt
         </h1>
         <p className="mt-3 text-text-muted">
@@ -38,7 +38,7 @@ export default function Home() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <label htmlFor="trip-name" className="text-sm font-medium text-text">
+          <label htmlFor="trip-name" className="text-sm font-bold text-text">
             What's the trip?
           </label>
           <input
@@ -50,12 +50,12 @@ export default function Home() {
             autoFocus
             autoComplete="off"
             maxLength={80}
-            className="w-full rounded-card border border-black/10 bg-bg px-4 py-3 text-base text-text shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
+            className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base text-text shadow-[0_2px_0_var(--color-border)] outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
           />
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-negative">
+          <p role="alert" className="text-sm font-semibold text-negative">
             {error}
           </p>
         )}
@@ -63,7 +63,7 @@ export default function Home() {
         <button
           type="submit"
           disabled={!canSubmit}
-          className="mt-2 w-full rounded-card bg-accent px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="mt-2 w-full rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {submitting ? 'Starting…' : 'Start a new trip'}
         </button>

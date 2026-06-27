@@ -1,24 +1,28 @@
 @import "tailwindcss";
 
 /* Design tokens — see CLAUDE.md "Design direction".
-   Airbnb-inspired: clean, warm-neutral, mobile-first. */
+   Azure: Duolingo-flavored sky-blue, chunky offset shadows, mobile-first. */
 @theme {
   --color-bg: #ffffff;
-  --color-surface: #f7f7f7;
-  --color-text: #222222;
-  --color-text-muted: #717171;
+  --color-surface: #f4f8fb; /* light blue-tinted */
+  --color-text: #1d2a3a;
+  --color-text-muted: #9aacc0;
+  --color-border: #e7edf3; /* hairline + chunky-shadow color */
+  --color-chip: #dcefff; /* avatar / emoji tile background */
 
-  /* Single warm accent for CTAs/highlights (coral). */
-  --color-accent: #ff5a5f;
-  --color-accent-hover: #e54b50;
+  --color-accent: #1cb0f6; /* primary brand blue */
+  --color-accent-hover: #1483cc;
+  --color-accent-shadow: #1483cc; /* offset shadow under blue buttons */
+  --color-accent2: #7b61ff; /* violet, secondary links (e.g. Copy) */
 
-  /* Balance semantics. */
-  --color-positive: #2e9e5b; /* gets money back */
-  --color-negative: #e0565b; /* owes money */
+  --color-positive: #1cb0f6; /* BLUE = owed / gets back */
+  --color-positive-shadow: #1483cc;
+  --color-negative: #ff5a5f; /* red = owes */
+  --color-negative-shadow: #d8474c;
 
-  --radius-card: 12px;
-
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --radius-card: 18px;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", var(--font-sans); /* headings & numbers */
 }
 
 html,

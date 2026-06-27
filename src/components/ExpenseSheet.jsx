@@ -40,24 +40,24 @@ export default function ExpenseSheet({
         className="animate-sheet w-full max-w-md rounded-t-2xl bg-bg p-6 shadow-lg sm:rounded-card"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-black/10 sm:hidden" />
+        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-[var(--color-border)] sm:hidden" />
 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="truncate text-lg font-semibold text-text">
+            <h2 className="truncate font-display text-lg font-extrabold text-text">
               {expense.description?.trim() || 'Expense'}
             </h2>
-            <p className="mt-1 text-sm text-text-muted">
+            <p className="mt-1 text-sm font-semibold text-text-muted">
               {payerName} paid · {formatWhen(expense.created_at)}
             </p>
           </div>
-          <span className="shrink-0 text-lg font-semibold text-text">
+          <span className="shrink-0 font-display text-lg font-extrabold text-text">
             {formatEGP(expense.amount)}
           </span>
         </div>
 
         {error && (
-          <p role="alert" className="mt-4 text-sm text-negative">
+          <p role="alert" className="mt-4 text-sm font-semibold text-negative">
             {error}
           </p>
         )}
@@ -67,21 +67,21 @@ export default function ExpenseSheet({
             <button
               type="button"
               onClick={() => onEdit(expense)}
-              className="w-full rounded-card bg-accent px-4 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-accent-hover"
+              className="w-full rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)]"
             >
               Edit expense
             </button>
             <button
               type="button"
               onClick={() => setConfirming(true)}
-              className="w-full rounded-card border border-negative/30 px-4 py-3 text-base font-medium text-negative transition hover:bg-negative/5"
+              className="w-full rounded-card border border-negative/40 px-4 py-3 text-base font-bold text-negative transition hover:bg-negative/5"
             >
               Delete expense
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="w-full rounded-card border border-black/10 bg-bg px-4 py-3 text-base font-medium text-text transition hover:bg-surface"
+              className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base font-bold text-text shadow-[0_2px_0_var(--color-border)] transition hover:bg-surface active:translate-y-[1px] active:shadow-[0_1px_0_var(--color-border)]"
             >
               Close
             </button>
@@ -97,7 +97,7 @@ export default function ExpenseSheet({
                 type="button"
                 onClick={() => setConfirming(false)}
                 disabled={deleting}
-                className="flex-1 rounded-card border border-black/10 bg-bg px-4 py-3 text-base font-medium text-text transition hover:bg-surface disabled:opacity-50"
+                className="flex-1 rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base font-bold text-text shadow-[0_2px_0_var(--color-border)] transition hover:bg-surface disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -105,7 +105,7 @@ export default function ExpenseSheet({
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="flex-1 rounded-card bg-negative px-4 py-3 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex-1 rounded-card bg-negative px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-negative-shadow)] transition hover:opacity-90 active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-negative-shadow)] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {deleting ? 'Deleting…' : 'Delete'}
               </button>
