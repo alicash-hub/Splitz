@@ -9,7 +9,7 @@ export default function ShareSheet({ trip, onClose }) {
     typeof window !== 'undefined' ? window.location.origin : ''
   const link = `${origin}/t/${trip.slug}`
   const code = trip.slug.toUpperCase()
-  const message = `Join our "${trip.name}" trip on Bread & Salt 👋\n${link}\n…or join with group code ${code}`
+  const message = `Join our "${trip.name}" trip on Eish & Malh 👋\n${link}\n…or join with group code ${code}`
 
   const canShare = typeof navigator !== 'undefined' && !!navigator.share
 
@@ -25,7 +25,7 @@ export default function ShareSheet({ trip, onClose }) {
 
   async function share() {
     try {
-      await navigator.share({ title: `${trip.name} on Bread & Salt`, text: message })
+      await navigator.share({ title: `${trip.name} on Eish & Malh`, text: message })
     } catch {
       // User dismissed the share sheet, or it's unavailable — no-op.
     }

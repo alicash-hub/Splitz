@@ -33,7 +33,7 @@ export default function Home() {
     <main className="mx-auto flex min-h-full max-w-md flex-col px-6 pt-14 pb-12">
       <header className="mb-8 text-center">
         <h1 className="font-display text-4xl font-extrabold tracking-tight text-text">
-          Bread &amp; Salt
+          Eish &amp; Malh
         </h1>
         <p className="mt-3 text-text-muted">
           Split group expenses. Settle up the easy way.

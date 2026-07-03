@@ -7,7 +7,7 @@ distillation.
 
 ## What we're building
 
-**Bread & Salt (عيش وملح)** — a mobile-first web app for splitting group
+**Eish & Malh (عيش وملح)** — a mobile-first web app for splitting group
 expenses on trips and outings. Anyone in a group can log an expense; everyone
 can see the running balance and the minimum set of transfers needed to settle
 up. No login, no install — share a link in WhatsApp and go.
