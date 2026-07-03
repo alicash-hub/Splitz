@@ -71,30 +71,33 @@ export default function SettlementSection({
                 involvesMe ? 'bg-chip' : 'bg-bg'
               }`}
             >
-              <div className="flex items-center gap-2">
-                <Avatar name={t.fromName} />
-                <span aria-hidden className="text-text-muted">
-                  →
-                </span>
-                <Avatar name={t.toName} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm text-text">
-                    <span className="font-bold">{t.fromName}</span>
-                    <span className="text-text-muted"> pays </span>
-                    <span className="font-bold">{t.toName}</span>
-                  </p>
-                  {tag && (
-                    <p
-                      className={`text-xs font-extrabold uppercase tracking-wide ${accent}`}
-                    >
-                      {tag}
-                    </p>
-                  )}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Avatar name={t.fromName} />
+                  <span aria-hidden className="text-text-muted">
+                    →
+                  </span>
+                  <Avatar name={t.toName} />
                 </div>
-                <span className={`shrink-0 font-display font-extrabold ${accent}`}>
+                <span
+                  className={`shrink-0 font-display text-lg font-extrabold ${accent}`}
+                >
                   {formatEGP(t.amount)}
                 </span>
               </div>
+
+              <p className="mt-2 text-sm text-text">
+                <span className="font-bold">{t.fromName}</span>
+                <span className="text-text-muted"> pays </span>
+                <span className="font-bold">{t.toName}</span>
+              </p>
+              {tag && (
+                <p
+                  className={`mt-0.5 text-xs font-extrabold uppercase tracking-wide ${accent}`}
+                >
+                  {tag}
+                </p>
+              )}
 
               {involvesMe && (
                 <button
