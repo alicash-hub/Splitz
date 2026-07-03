@@ -85,18 +85,14 @@ export default function TripDashboard({ trip, memberId }) {
         {solo ? (
           <section className="mb-8">
             <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center shadow-[0_2px_0_var(--color-border)]">
-              <div className="text-5xl">👋</div>
+              <div className="text-5xl">🕴️</div>
               <h2 className="mt-3 font-display text-xl font-extrabold text-text">
                 It's just you in here
               </h2>
-              <p className="mx-auto mt-2 max-w-xs text-sm text-text-muted">
-                Invite the group so everyone can add what they paid — then you'll
-                see who owes who.
-              </p>
               <button
                 type="button"
                 onClick={() => setShowShare(true)}
-                className="mt-5 w-full rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)]"
+                className="mt-6 w-full rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)]"
               >
                 Invite friends
               </button>
