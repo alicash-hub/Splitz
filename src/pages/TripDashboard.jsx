@@ -75,16 +75,20 @@ export default function TripDashboard({ trip, memberId }) {
           <h1 className="font-display text-3xl font-extrabold tracking-tight text-text">
             {tripName}
           </h1>
-          <p className="mt-1 text-sm text-text-muted">
-            {solo
-              ? 'Just you so far'
-              : `${members.length} ${members.length === 1 ? 'person' : 'people'}`}
-          </p>
+          {!solo && (
+            <p className="mt-1 text-sm text-text-muted">
+              {members.length} {members.length === 1 ? 'person' : 'people'}
+            </p>
+          )}
         </header>
 
         {solo ? (
-          <section className="mb-8">
-            <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center shadow-[0_2px_0_var(--color-border)]">
+          <>
+            <div className="mb-8">
+              <MemberInitials members={members} />
+            </div>
+            <section className="mb-8">
+              <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center shadow-[0_2px_0_var(--color-border)]">
               <div className="text-5xl">🕴️</div>
               <h2 className="mt-3 font-display text-xl font-extrabold text-text">
                 It's just you in here
@@ -96,8 +100,9 @@ export default function TripDashboard({ trip, memberId }) {
               >
                 Invite friends
               </button>
-            </div>
-          </section>
+              </div>
+            </section>
+          </>
         ) : (
           <>
             <div className="mb-8 flex items-center justify-between gap-3">
