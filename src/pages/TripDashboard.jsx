@@ -3,6 +3,7 @@ import { useTripData } from '../hooks/useTripData'
 import { computeBalances, minimizeTransfers } from '../lib/settlement'
 import { clearCachedMemberId } from '../lib/identity'
 import MemberInitials from '../components/MemberInitials'
+import BalanceHero from '../components/BalanceHero'
 import BalanceCard from '../components/BalanceCard'
 import SettlementSection from '../components/SettlementSection'
 import ExpenseCard from '../components/ExpenseCard'
@@ -21,6 +22,7 @@ export default function TripDashboard({ trip, memberId }) {
   )
   const [showAdd, setShowAdd] = useState(false)
   const [showShare, setShowShare] = useState(false)
+  const [note, setNote] = useState('')
   const [selectedMember, setSelectedMember] = useState(null)
   const [selectedExpense, setSelectedExpense] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -55,6 +57,15 @@ export default function TripDashboard({ trip, memberId }) {
     () => new Map(members.map((m) => [m.id, m.name])),
     [members],
   )
+
+  const myBalance = balances.find((b) => b.memberId === memberId)
+  const myNet = myBalance ? myBalance.net : 0
+
+  // Placeholder for the settle-up CTA; recording real payments lands in R5.
+  function showNote(message) {
+    setNote(message)
+    setTimeout(() => setNote(''), 2400)
+  }
 
   // Solo trip: no one to settle with yet — lead with an invite instead of empty
   // balance/settle-up sections. Flips automatically once someone else joins.
@@ -116,11 +127,28 @@ export default function TripDashboard({ trip, memberId }) {
               </button>
             </div>
 
-            <section className="mb-8">
-              <h2 className="mb-3 font-display text-lg font-bold text-text">
-                Where everyone stands
-              </h2>
-              <div className="flex flex-col gap-2">
+            <div className="mb-6">
+              <BalanceHero net={myNet} />
+            </div>
+
+            {transfers.length > 0 && (
+              <div className="mb-6">
+                <SettlementSection
+                  tripName={tripName}
+                  transfers={transfers}
+                  memberId={memberId}
+                  onSettle={() =>
+                    showNote('Recording payments is coming in the next update ✨')
+                  }
+                />
+              </div>
+            )}
+
+            <details className="mb-8 rounded-card border border-[var(--color-border)] bg-bg shadow-[0_2px_0_var(--color-border)]">
+              <summary className="cursor-pointer select-none px-4 py-3 font-display text-sm font-bold text-text">
+                Per person
+              </summary>
+              <div className="flex flex-col gap-2 px-3 pb-3">
                 {balances.map((b) => (
                   <BalanceCard
                     key={b.memberId}
@@ -130,21 +158,17 @@ export default function TripDashboard({ trip, memberId }) {
                   />
                 ))}
               </div>
-            </section>
-
-            <div className="mb-8">
-              <SettlementSection tripName={tripName} transfers={transfers} />
-            </div>
+            </details>
           </>
         )}
 
         <section>
           <h2 className="mb-3 font-display text-lg font-bold text-text">
-            Expenses
+            Activity
           </h2>
           {expenses.length === 0 ? (
             <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center font-semibold text-text-muted shadow-[0_2px_0_var(--color-border)]">
-              No expenses yet. Tap “Add expense” to log the first one.
+              No activity yet. Tap “Add expense” to log the first one.
             </div>
           ) : (
             <div className="flex flex-col gap-2">
@@ -240,6 +264,14 @@ export default function TripDashboard({ trip, memberId }) {
             refreshExpenses()
           }}
         />
+      )}
+
+      {note && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-28 z-40 mx-auto max-w-md px-6">
+          <div className="mx-auto w-fit rounded-full bg-text px-4 py-2 text-center text-sm font-bold text-white shadow-lg">
+            {note}
+          </div>
+        </div>
       )}
     </>
   )
