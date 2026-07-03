@@ -355,3 +355,32 @@ Run npm test (settlement specs must pass), npm run lint, npm run build.
   Jakarta Sans**, body = Nunito; **softened** offset shadows (hero 4px, buttons 3px,
   cards 2px); owed = brand blue, owe = red; no payment
   methods; no partial payments yet; recents list is local-only; group code = slug.
+
+---
+
+## R6 — Trip emojis (deferred polish)
+
+**Status:** deferred — build after R5, unless reprioritized. (Was "optional polish"
+above; promoted to a named release.) Touches the database, so ship it on its own
+branch → preview → merge.
+
+**Goal:** pick an icon when creating a trip; show it in the "Your trips" tiles and
+the dashboard header (falling back to initials when a trip has none).
+
+**Decision:** the create flow becomes a **separate create screen** (like the
+prototype) — tapping "Start a new trip" on Home opens a dedicated screen with a
+Back button, a big emoji-preview tile, the trip-name field, and a "Pick an icon"
+grid. This supersedes R2's inline create card.
+
+**Icon set:** `🏖️ ✈️ 🏠 🎉 🍽️ ⛰️ 🚗 🏝️`; default `🏖️`, fallback `🧳`.
+
+**Files:** new migration `supabase/migrations/<ts>_trip_emoji.sql` (add nullable
+`emoji text` to `public.trips` — forward-only, idempotent style, backward-compatible;
+null → initials). New `src/pages/CreateTrip.jsx` + route (e.g. `/new`); `Home.jsx`
+"Start a new trip" navigates there instead of the inline form. `src/lib/trips.js`
+`createTrip(name, emoji)`. `src/lib/recentTrips.js` store `emoji` too (so tiles render
+it without a fetch). Render emoji in the Home recents tile and `TripDashboard`
+header/solo tile. Update `CLAUDE.md` data model (+`emoji`).
+
+**Note:** existing trips (and any created before this ships) have no emoji → they
+render initials, same as today. No backfill needed.

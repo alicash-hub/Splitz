@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { getTripBySlug } from '../lib/trips'
 import { getCachedMemberId, setCachedMemberId } from '../lib/identity'
+import { rememberTrip } from '../lib/recentTrips'
 import JoinTrip from './JoinTrip'
 import TripDashboard from './TripDashboard'
 
@@ -28,6 +29,7 @@ export default function TripPage() {
         }
         setTrip(row)
         setMemberId(getCachedMemberId(row.id))
+        rememberTrip({ id: row.id, name: row.name, slug: row.slug })
       })
       .catch(() => {
         if (active) setNotFound(true)
@@ -60,8 +62,8 @@ export default function TripPage() {
           Trip not found
         </h1>
         <p className="mt-3 text-text-muted">
-          This trip link doesn't seem to exist. Double-check the link, or start a
-          new trip.
+          This trip doesn't seem to exist. Double-check the link or group code, or
+          start a new trip.
         </p>
       </main>
     )
