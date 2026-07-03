@@ -77,6 +77,14 @@ export default function Home() {
         </button>
       </form>
 
+      <button
+        type="button"
+        onClick={() => navigate('/join')}
+        className="mt-4 w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base font-bold text-text shadow-[0_2px_0_var(--color-border)] transition hover:bg-surface active:translate-y-[1px] active:shadow-[0_1px_0_var(--color-border)]"
+      >
+        Join an existing group
+      </button>
+
       {recents.length > 0 && (
         <section className="mt-8">
           <h2 className="mb-3 font-display text-lg font-extrabold text-text">

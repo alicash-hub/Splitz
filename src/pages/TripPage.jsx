@@ -62,8 +62,8 @@ export default function TripPage() {
           Trip not found
         </h1>
         <p className="mt-3 text-text-muted">
-          This trip link doesn't seem to exist. Double-check the link, or start a
-          new trip.
+          This trip doesn't seem to exist. Double-check the link or group code, or
+          start a new trip.
         </p>
       </main>
     )
