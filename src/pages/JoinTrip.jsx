@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { listMembers, joinTrip } from '../lib/members'
+import { friendlyError } from '../lib/errors'
 
 export default function JoinTrip({ trip, onJoined }) {
   const [members, setMembers] = useState([])
@@ -42,7 +43,7 @@ export default function JoinTrip({ trip, onJoined }) {
       const member = await joinTrip(trip.id, name)
       onJoined(member)
     } catch (err) {
-      setError(err.message ?? 'Something went wrong. Please try again.')
+      setError(friendlyError(err))
       setSubmitting(false)
     }
   }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatEGP, formatWhen } from '../lib/format'
 import { deleteExpense } from '../lib/expenses'
+import { friendlyError } from '../lib/errors'
 
 // Expense options sheet. Deleting takes a deliberate second step so it isn't a
 // one-tap mistake; balances recompute from whatever's left.
@@ -23,7 +24,7 @@ export default function ExpenseSheet({
       await deleteExpense(expense.id)
       onDeleted(expense)
     } catch (err) {
-      setError(err.message ?? 'Could not delete it. Please try again.')
+      setError(friendlyError(err, 'Could not delete it. Please try again.'))
       setDeleting(false)
     }
   }

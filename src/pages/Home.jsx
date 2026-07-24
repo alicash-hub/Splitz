@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createTrip } from '../lib/trips'
+import { friendlyError } from '../lib/errors'
 import { listRecentTrips, rememberTrip } from '../lib/recentTrips'
 import { initials, formatWhen } from '../lib/format'
 
@@ -24,7 +25,7 @@ export default function Home() {
       rememberTrip({ id: trip.id, name: trip.name, slug: trip.slug })
       navigate(`/t/${trip.slug}`)
     } catch (err) {
-      setError(err.message ?? 'Something went wrong. Please try again.')
+      setError(friendlyError(err))
       setSubmitting(false)
     }
   }

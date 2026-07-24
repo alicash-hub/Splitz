@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { addExpense, updateExpense } from '../lib/expenses'
 import { initials } from '../lib/format'
+import { friendlyError } from '../lib/errors'
 
 // Bottom sheet (mobile) / centered modal (larger screens) for logging or editing
 // an expense. Pass `expense` to edit it; omit to add a new one.
@@ -52,8 +53,10 @@ export default function AddExpense({
       onClose()
     } catch (err) {
       setError(
-        err.message ??
+        friendlyError(
+          err,
           `Could not ${isEdit ? 'save' : 'add'} the expense. Please try again.`,
+        ),
       )
       setSubmitting(false)
     }
