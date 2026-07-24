@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatEGP } from '../lib/format'
 import { deleteMember } from '../lib/members'
+import { friendlyError } from '../lib/errors'
 
 // Member options sheet. Removing a member is destructive (their expenses cascade
 // with them), so it takes a deliberate second step that spells out the impact —
@@ -19,7 +20,7 @@ export default function MemberSheet({ member, net, expenseCount, onClose, onRemo
       await deleteMember(member.id)
       onRemoved(member)
     } catch (err) {
-      setError(err.message ?? 'Could not remove them. Please try again.')
+      setError(friendlyError(err, 'Could not remove them. Please try again.'))
       setRemoving(false)
     }
   }

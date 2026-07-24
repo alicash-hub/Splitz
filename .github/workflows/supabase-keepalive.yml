@@ -1,0 +1,23 @@
+name: Supabase keep-alive
+
+# Free Supabase projects pause after ~7 days with no API activity. This makes one
+# tiny authenticated request per day so the project stays awake. Runs only from
+# the default branch (GitHub schedules only fire there). Always exits 0 — it's a
+# best-effort ping, not a health gate (that's supabase-check.yml).
+on:
+  schedule:
+    - cron: '17 6 * * *' # ~06:17 UTC daily (off the :00 mark)
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST
+        env:
+          URL: ${{ secrets.VITE_SUPABASE_URL }}
+          KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          curl -sS -o /dev/null -w "keep-alive: HTTP %{http_code}\n" \
+            "$URL/rest/v1/trips?select=id&limit=1" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" || true
