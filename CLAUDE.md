@@ -103,6 +103,12 @@ name), `created_at` (timestamp).
 **`expenses`** — `id` (uuid, pk), `trip_id` (uuid → trips), `paid_by` (uuid →
 members), `amount` (numeric, EGP), `description` (text), `created_at` (timestamp).
 
+**`settlements`** — `id` (uuid, pk), `trip_id` (uuid → trips), `from_id` (uuid →
+members), `to_id` (uuid → members), `amount` (numeric, EGP), `created_at`
+(timestamp). A recorded real-world payment; `computeBalances` nets it out (moves
+`from`'s net up and `to`'s net down) so debts clear. Deletable = undo. No payment
+integration — settlements are just records; no money moves through the app.
+
 Split is **equal among all members** for MVP — no per-expense split config.
 
 ### Migrations

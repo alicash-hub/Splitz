@@ -50,6 +50,57 @@ describe('computeBalances', () => {
   })
 })
 
+describe('computeBalances with settlements', () => {
+  it('nets a recorded payment: debtor up, creditor down, sum still zero', () => {
+    // Aya paid 300 -> a:+200, b:-100, c:-100. Basel pays Aya 100.
+    const balances = computeBalances(
+      members,
+      [{ paid_by: 'a', amount: 300 }],
+      [{ from_id: 'b', to_id: 'a', amount: 100 }],
+    )
+    expect(netOf(balances, 'a')).toBe(100)
+    expect(netOf(balances, 'b')).toBe(0)
+    expect(netOf(balances, 'c')).toBe(-100)
+    expect(balances.reduce((t, x) => t + x.net, 0)).toBeCloseTo(0, 10)
+  })
+
+  it('a full round of settlements clears everyone', () => {
+    const balances = computeBalances(
+      members,
+      [{ paid_by: 'a', amount: 300 }],
+      [
+        { from_id: 'b', to_id: 'a', amount: 100 },
+        { from_id: 'c', to_id: 'a', amount: 100 },
+      ],
+    )
+    expect(balances.map((b) => b.net)).toEqual([0, 0, 0])
+    expect(minimizeTransfers(balances)).toEqual([])
+  })
+
+  it('settling one transfer removes just that pair, no reverse debt', () => {
+    const balances = computeBalances(
+      members,
+      [{ paid_by: 'a', amount: 300 }],
+      [{ from_id: 'b', to_id: 'a', amount: 100 }],
+    )
+    const transfers = minimizeTransfers(balances)
+    expect(transfers).toEqual([
+      { fromId: 'c', fromName: 'Cairo', toId: 'a', toName: 'Aya', amount: 100 },
+    ])
+  })
+
+  it('ignores settlements referencing unknown members', () => {
+    const balances = computeBalances(
+      members,
+      [{ paid_by: 'a', amount: 300 }],
+      [{ from_id: 'b', to_id: 'ghost', amount: 100 }],
+    )
+    // unchanged from the no-settlement case
+    expect(netOf(balances, 'a')).toBe(200)
+    expect(netOf(balances, 'b')).toBe(-100)
+  })
+})
+
 describe('minimizeTransfers', () => {
   it('returns no transfers when everyone is settled', () => {
     const balances = computeBalances(members, [])
