@@ -43,3 +43,25 @@ export function rememberTrip({ id, name, slug }, now = Date.now()) {
     // Best-effort: if we can't persist, the list just won't include this trip.
   }
 }
+
+/**
+ * Keep only the recent trips whose slug is in `keepSlugs`; drop the rest. Used to
+ * evict trips that have been deleted from the database. Returns the pruned list.
+ * @param {Set<string>|string[]} keepSlugs
+ */
+export function pruneRecentTrips(keepSlugs) {
+  const keep = keepSlugs instanceof Set ? keepSlugs : new Set(keepSlugs)
+  const current = listRecentTrips()
+  const next = current.filter((t) => keep.has(t.slug))
+  if (next.length !== current.length) {
+    const store = storage()
+    if (store) {
+      try {
+        store.setItem(KEY, JSON.stringify(next))
+      } catch {
+        // Best-effort: the in-memory pruned list is still returned either way.
+      }
+    }
+  }
+  return next
+}
