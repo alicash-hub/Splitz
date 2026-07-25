@@ -384,3 +384,60 @@ header/solo tile. Update `CLAUDE.md` data model (+`emoji`).
 
 **Note:** existing trips (and any created before this ships) have no emoji → they
 render initials, same as today. No backfill needed.
+
+---
+
+## R7 — Localization (Arabic + RTL)
+
+**Status:** planned. Post-MVP ("Arabic RTL" from the PRD), pulled forward. Big and
+cross-cutting (touches ~every component), so ship it **phased in 3 releases**.
+Client-only — no schema changes.
+
+### Locked decisions
+- **Locale lives in the URL path:** `/en/…` and `/ar/…`.
+  - A URL **with** a locale prefix wins and sticks (shareable — an `/ar` link opens
+    in Arabic for the recipient).
+  - A URL with **no** prefix → **auto-detect** from `navigator.language` (Arabic →
+    `ar`, else `en`) → redirect to the prefixed URL.
+  - A **عربي / EN toggle** switches the prefix (navigates to the same page under the
+    other locale).
+- **Western digits (0-9)** in both languages (`Intl … numberingSystem: 'latn'`).
+- **Lightweight, dependency-free i18n** — a `translations` dictionary + `useT()` hook
+  + a locale context that also drives `dir`/`lang`. (Not react-i18next; ~120 strings.)
+- **Full RTL mirror** for Arabic (not just translated text).
+- **Arabic font:** Cairo or Tajawal (rounded, Azure-friendly); Western stays Plus
+  Jakarta Sans + Nunito.
+
+### R7.1 — i18n infra + string extraction (no visual change)
+- New `src/i18n/` : `translations.js` (`en` filled, `ar` stubbed = English for now),
+  `LocaleContext` + `useT()` + `useLocale()`.
+- Routing: add a `/:lang(en|ar)` layer wrapping existing routes (`Home`, `/join`,
+  `/t/:slug`); redirect unprefixed paths to the detected locale.
+- Replace every hardcoded string with `t('…')`. English output identical → safe to ship.
+
+### R7.2 — RTL layout + Arabic font
+- Set `dir` from locale; load + apply the Arabic font when `lang=ar`.
+- Convert directional Tailwind utilities to **logical** (`ps/pe`, `ms/me`,
+  `start/end`, `text-start`); add `rtl:` variants for glyphs (`→`/`←`, `›`/`‹`) and
+  mirror the swipe-to-reveal direction.
+- **Bidi-isolate** mixed LTR content (EGP amounts, the group code) so it doesn't
+  scramble inside Arabic text. `ar` still = English here, to validate the mirror alone.
+
+### R7.3 — Arabic copy + locale formatting + toggle
+- Fill `ar` translations (all strings), Arabic app name **عيش وملح**, Arabic share message.
+- Locale-aware `Intl` currency/date/relative-time with `ar-EG` + Western digits.
+- **Plurals:** small helper or phrasing that avoids Arabic dual/plural pitfalls
+  (the "N people" / "N expenses" counts).
+- Wire the عربي / EN toggle (Home + trip header).
+
+### Open sub-decisions (decide before R7.3)
+- **Invite links:** locale-neutral (`/t/slug`, recipient auto-detects their own
+  language) vs. carry the sender's locale. Leaning **locale-neutral**.
+- **Remember manual choice** in localStorage vs. always auto-detect on unprefixed
+  entry. Current rule = auto-detect.
+- Font: **Cairo vs Tajawal**.
+
+### Verification
+- lint/build/tests each phase; review each on its own preview.
+- Check RTL with real Arabic strings; confirm amounts + group code read left-to-right
+  inside Arabic (no bidi scramble); test the toggle and a shared `/ar/t/<slug>` link.

@@ -73,6 +73,19 @@ try {
     console.log('✓ duplicate name rejected (case-insensitive)')
   }
 
+  // 3b. Add a second member (needed for a settlement between two people)
+  let member2Id = null
+  {
+    const { data, error } = await supabase
+      .from('members')
+      .insert({ trip_id: tripId, name: 'CI Tester Two' })
+      .select()
+      .single()
+    if (error) fail('add second member', error)
+    member2Id = data.id
+    console.log('✓ add second member')
+  }
+
   // 4. Add an expense
   let expenseId = null
   {
@@ -89,6 +102,24 @@ try {
     if (error) fail('add expense', error)
     expenseId = data.id
     console.log('✓ add expense')
+  }
+
+  // 4b. Record a settlement (the "Mark as paid" path). This is the write that
+  // was hitting PGRST205 "table not in schema cache" — exercise it directly.
+  {
+    const { data, error } = await supabase
+      .from('settlements')
+      .insert({
+        trip_id: tripId,
+        from_id: member2Id,
+        to_id: memberId,
+        amount: 61.72,
+      })
+      .select()
+      .single()
+    if (error) fail('add settlement', error)
+    if (Number(data.amount) !== 61.72) fail('add settlement', new Error('amount mismatch'))
+    console.log(`✓ add settlement (id ${data.id})`)
   }
 
   // 5. Read it back and verify

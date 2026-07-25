@@ -26,7 +26,7 @@ const supabase = createClient(url, key)
 console.log(`→ Connecting to ${url} …`)
 
 let failed = false
-for (const table of ['trips', 'members', 'expenses']) {
+for (const table of ['trips', 'members', 'expenses', 'settlements']) {
   const { error, count } = await supabase
     .from(table)
     .select('*', { count: 'exact', head: true })
