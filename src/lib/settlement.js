@@ -6,15 +6,20 @@
 // residual.
 
 /**
- * Net balance per member: what they paid minus their fair (equal) share.
+ * Net balance per member: what they paid minus their fair (equal) share, then
+ * netted by any recorded settlements (real-world payments).
+ *
+ * A settlement of `amount` from A→B means A paid down their debt, so it moves A's
+ * net UP and B's net DOWN by `amount` (nets still sum to zero).
  *
  * @param {Array<{id: string, name: string}>} members
  * @param {Array<{paid_by: string, amount: number|string}>} expenses
+ * @param {Array<{from_id: string, to_id: string, amount: number|string}>} [settlements]
  * @returns {Array<{memberId: string, name: string, paid: number, net: number}>}
  *   `paid` and `net` are in EGP. Positive net = overpaid (gets money back),
  *   negative = underpaid (owes). Order matches `members`.
  */
-export function computeBalances(members, expenses) {
+export function computeBalances(members, expenses, settlements = []) {
   if (!members || members.length === 0) return []
 
   const paidCents = new Map(members.map((m) => [m.id, 0]))
@@ -28,6 +33,16 @@ export function computeBalances(members, expenses) {
     totalCents += cents
   }
 
+  // Recorded settlements adjust nets without touching the shared total.
+  const settleCents = new Map(members.map((m) => [m.id, 0]))
+  for (const s of settlements ?? []) {
+    const cents = Math.round(Number(s.amount) * 100)
+    if (!Number.isFinite(cents)) continue
+    if (!settleCents.has(s.from_id) || !settleCents.has(s.to_id)) continue
+    settleCents.set(s.from_id, settleCents.get(s.from_id) + cents) // debtor's net up
+    settleCents.set(s.to_id, settleCents.get(s.to_id) - cents) // creditor's net down
+  }
+
   const n = members.length
   const baseShare = Math.floor(totalCents / n)
   // Spread the leftover piastres across the first members so shares sum exactly
@@ -37,11 +52,12 @@ export function computeBalances(members, expenses) {
   return members.map((member, idx) => {
     const shareCents = baseShare + (idx < remainder ? 1 : 0)
     const paid = paidCents.get(member.id)
+    const netCents = paid - shareCents + settleCents.get(member.id)
     return {
       memberId: member.id,
       name: member.name,
       paid: paid / 100,
-      net: (paid - shareCents) / 100,
+      net: netCents / 100,
     }
   })
 }
