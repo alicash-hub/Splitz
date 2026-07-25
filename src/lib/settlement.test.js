@@ -50,6 +50,60 @@ describe('computeBalances', () => {
   })
 })
 
+describe('computeBalances with a per-expense split', () => {
+  it('only charges the members an expense is split between', () => {
+    // Aya pays 100, split just between Aya and Basel. Cairo owes nothing.
+    const balances = computeBalances(members, [
+      { paid_by: 'a', amount: 100, split_between: ['a', 'b'] },
+    ])
+    expect(netOf(balances, 'a')).toBe(50)
+    expect(netOf(balances, 'b')).toBe(-50)
+    expect(netOf(balances, 'c')).toBe(0)
+    expect(balances.reduce((t, x) => t + x.net, 0)).toBeCloseTo(0, 10)
+  })
+
+  it('treats an empty or full split_between as everyone', () => {
+    const empty = computeBalances(members, [
+      { paid_by: 'a', amount: 300, split_between: [] },
+    ])
+    const full = computeBalances(members, [
+      { paid_by: 'a', amount: 300, split_between: ['a', 'b', 'c'] },
+    ])
+    const everyone = computeBalances(members, [{ paid_by: 'a', amount: 300 }])
+    expect(empty.map((b) => b.net)).toEqual(everyone.map((b) => b.net))
+    expect(full.map((b) => b.net)).toEqual(everyone.map((b) => b.net))
+  })
+
+  it('lets someone pay only for themselves (split of one)', () => {
+    const balances = computeBalances(members, [
+      { paid_by: 'a', amount: 40, split_between: ['a'] },
+    ])
+    expect(balances.map((b) => b.net)).toEqual([0, 0, 0])
+  })
+
+  it('ignores split ids that are no longer members', () => {
+    // Split named Basel and a removed member; only Basel still counts, so the
+    // whole 100 lands on Basel.
+    const balances = computeBalances(members, [
+      { paid_by: 'a', amount: 100, split_between: ['b', 'ghost'] },
+    ])
+    expect(netOf(balances, 'a')).toBe(100)
+    expect(netOf(balances, 'b')).toBe(-100)
+    expect(netOf(balances, 'c')).toBe(0)
+  })
+
+  it('spreads the remainder so a subset split still sums to zero', () => {
+    // 1.11 split between two -> 0.56 / 0.55, no residual.
+    const balances = computeBalances(members, [
+      { paid_by: 'a', amount: 1.11, split_between: ['a', 'b'] },
+    ])
+    expect(netOf(balances, 'a')).toBeCloseTo(0.55, 10)
+    expect(netOf(balances, 'b')).toBeCloseTo(-0.55, 10)
+    expect(netOf(balances, 'c')).toBe(0)
+    expect(balances.reduce((t, x) => t + x.net, 0)).toBeCloseTo(0, 10)
+  })
+})
+
 describe('computeBalances with settlements', () => {
   it('nets a recorded payment: debtor up, creditor down, sum still zero', () => {
     // Aya paid 300 -> a:+200, b:-100, c:-100. Basel pays Aya 100.
@@ -120,13 +174,13 @@ describe('minimizeTransfers', () => {
 
   it('omits members who are already even', () => {
     const balances = computeBalances(members, [
-      { paid_by: 'a', amount: 100 },
-      { paid_by: 'b', amount: 50 },
+      { paid_by: 'a', amount: 60 },
+      { paid_by: 'b', amount: 30 },
     ])
-    // total 150, share 50 -> a:+50, b:0, c:-50
+    // total 90, share 30 -> a:+30, b:0, c:-30
     const transfers = minimizeTransfers(balances)
     expect(transfers).toEqual([
-      { fromId: 'c', fromName: 'Cairo', toId: 'a', toName: 'Aya', amount: 50 },
+      { fromId: 'c', fromName: 'Cairo', toId: 'a', toName: 'Aya', amount: 30 },
     ])
   })
 

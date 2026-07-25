@@ -101,7 +101,9 @@ the URL), `created_at` (timestamp).
 name), `created_at` (timestamp).
 
 **`expenses`** — `id` (uuid, pk), `trip_id` (uuid → trips), `paid_by` (uuid →
-members), `amount` (numeric, EGP), `description` (text), `created_at` (timestamp).
+members), `amount` (numeric, EGP), `description` (text), `split_between` (uuid[],
+nullable — member ids the cost is shared among; `null` = everyone), `created_at`
+(timestamp).
 
 **`settlements`** — `id` (uuid, pk), `trip_id` (uuid → trips), `from_id` (uuid →
 members), `to_id` (uuid → members), `amount` (numeric, EGP), `created_at`
@@ -109,7 +111,9 @@ members), `to_id` (uuid → members), `amount` (numeric, EGP), `created_at`
 `from`'s net up and `to`'s net down) so debts clear. Deletable = undo. No payment
 integration — settlements are just records; no money moves through the app.
 
-Split is **equal among all members** for MVP — no per-expense split config.
+Each expense is split **equally among its participants** (`split_between`), which
+defaults to the whole trip (`null` = everyone). Members outside an expense's
+`split_between` owe nothing toward it.
 
 ### Migrations
 
@@ -130,9 +134,10 @@ second-guess the user.
 
 ## Settlement algorithm
 
-1. Sum all expenses for the trip.
-2. Fair share per person = total ÷ number of members.
-3. For each member: net balance = (what they paid) − (fair share).
+1. For each expense, split its amount equally among its participants
+   (`split_between`, or everyone when `null`).
+2. Each member's share = the sum of their portions across the expenses they're in.
+3. For each member: net balance = (what they paid) − (their total share).
 4. Positive balance = overpaid → gets money back. Negative = underpaid → owes.
 5. Greedily match the largest debtor with the largest creditor, repeating until
    everyone is settled, to minimize the number of transfers.

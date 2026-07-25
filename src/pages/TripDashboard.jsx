@@ -254,6 +254,8 @@ export default function TripDashboard({ trip, memberId }) {
                       payerName={
                         memberNameById.get(item.data.paid_by) ?? 'Someone'
                       }
+                      memberNameById={memberNameById}
+                      memberCount={members.length}
                       onSelect={() => openExpense(item.data)}
                     />
                   </SwipeableRow>

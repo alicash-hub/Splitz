@@ -6,14 +6,19 @@
 // residual.
 
 /**
- * Net balance per member: what they paid minus their fair (equal) share, then
- * netted by any recorded settlements (real-world payments).
+ * Net balance per member: what they paid minus their share of every expense they
+ * take part in, then netted by any recorded settlements (real-world payments).
+ *
+ * Each expense is split equally among its participants. `split_between` is the
+ * list of member ids sharing that expense; a null/empty list (or one that names
+ * every member) means the whole trip splits it. Members not in an expense's
+ * `split_between` owe nothing toward it.
  *
  * A settlement of `amount` from A→B means A paid down their debt, so it moves A's
  * net UP and B's net DOWN by `amount` (nets still sum to zero).
  *
  * @param {Array<{id: string, name: string}>} members
- * @param {Array<{paid_by: string, amount: number|string}>} expenses
+ * @param {Array<{paid_by: string, amount: number|string, split_between?: string[]|null}>} expenses
  * @param {Array<{from_id: string, to_id: string, amount: number|string}>} [settlements]
  * @returns {Array<{memberId: string, name: string, paid: number, net: number}>}
  *   `paid` and `net` are in EGP. Positive net = overpaid (gets money back),
@@ -22,18 +27,36 @@
 export function computeBalances(members, expenses, settlements = []) {
   if (!members || members.length === 0) return []
 
+  const memberIds = members.map((m) => m.id)
+  const isMember = new Set(memberIds)
   const paidCents = new Map(members.map((m) => [m.id, 0]))
-  let totalCents = 0
+  const owedCents = new Map(members.map((m) => [m.id, 0]))
 
   for (const expense of expenses ?? []) {
     if (!paidCents.has(expense.paid_by)) continue // safety; FK should prevent this
     const cents = Math.round(Number(expense.amount) * 100)
     if (!Number.isFinite(cents)) continue
     paidCents.set(expense.paid_by, paidCents.get(expense.paid_by) + cents)
-    totalCents += cents
+
+    // Who shares this expense? Keep only ids that are still members; an empty
+    // list (null, [], or all-removed) falls back to the whole trip.
+    let participants = Array.isArray(expense.split_between)
+      ? expense.split_between.filter((id) => isMember.has(id))
+      : []
+    if (participants.length === 0) participants = memberIds
+
+    // Split in integer piastres, spreading the leftover across the first
+    // participants so their shares sum exactly to the expense (nets → zero).
+    const n = participants.length
+    const base = Math.floor(cents / n)
+    const remainder = cents - base * n
+    participants.forEach((id, idx) => {
+      const share = base + (idx < remainder ? 1 : 0)
+      owedCents.set(id, owedCents.get(id) + share)
+    })
   }
 
-  // Recorded settlements adjust nets without touching the shared total.
+  // Recorded settlements adjust nets without touching any shared total.
   const settleCents = new Map(members.map((m) => [m.id, 0]))
   for (const s of settlements ?? []) {
     const cents = Math.round(Number(s.amount) * 100)
@@ -43,16 +66,9 @@ export function computeBalances(members, expenses, settlements = []) {
     settleCents.set(s.to_id, settleCents.get(s.to_id) - cents) // creditor's net down
   }
 
-  const n = members.length
-  const baseShare = Math.floor(totalCents / n)
-  // Spread the leftover piastres across the first members so shares sum exactly
-  // to the total (and nets sum to zero).
-  const remainder = totalCents - baseShare * n
-
-  return members.map((member, idx) => {
-    const shareCents = baseShare + (idx < remainder ? 1 : 0)
+  return members.map((member) => {
     const paid = paidCents.get(member.id)
-    const netCents = paid - shareCents + settleCents.get(member.id)
+    const netCents = paid - owedCents.get(member.id) + settleCents.get(member.id)
     return {
       memberId: member.id,
       name: member.name,
