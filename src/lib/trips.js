@@ -31,6 +31,25 @@ export async function createTrip(name, { maxAttempts = 5 } = {}) {
 }
 
 /**
+ * Given a list of slugs, return the set of those that still exist. Used to prune
+ * the Home screen's "Your trips" list so trips deleted from the DB don't linger
+ * (that list is cached in localStorage and would otherwise never refresh).
+ *
+ * @param {string[]} slugs
+ * @returns {Promise<Set<string>>} the subset of `slugs` that still have a trip row
+ */
+export async function existingTripSlugs(slugs) {
+  if (!slugs.length) return new Set()
+  const { data, error } = await supabase
+    .from('trips')
+    .select('slug')
+    .in('slug', slugs)
+
+  if (error) throw error
+  return new Set(data.map((t) => t.slug))
+}
+
+/**
  * Look up a trip by its URL slug.
  *
  * @param {string} slug

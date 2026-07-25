@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createTrip } from '../lib/trips'
+import { createTrip, existingTripSlugs } from '../lib/trips'
 import { friendlyError } from '../lib/errors'
-import { listRecentTrips, rememberTrip } from '../lib/recentTrips'
+import { listRecentTrips, pruneRecentTrips, rememberTrip } from '../lib/recentTrips'
 import { initials, formatWhen } from '../lib/format'
 
 export default function Home() {
@@ -10,7 +10,32 @@ export default function Home() {
   const [name, setName] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
-  const [recents] = useState(() => listRecentTrips())
+  const [recents, setRecents] = useState(() => listRecentTrips())
+
+  // The recents list is cached in localStorage, so a trip deleted from the DB
+  // would otherwise linger here forever. On load, check which cached trips still
+  // exist and drop the ones that don't. On a network/DB error, keep the list
+  // as-is rather than wiping it.
+  useEffect(() => {
+    const cached = listRecentTrips()
+    if (cached.length === 0) return
+
+    let cancelled = false
+    existingTripSlugs(cached.map((t) => t.slug))
+      .then((existing) => {
+        if (cancelled) return
+        if (cached.some((t) => !existing.has(t.slug))) {
+          setRecents(pruneRecentTrips(existing))
+        }
+      })
+      .catch(() => {
+        /* leave the cached list untouched */
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const canSubmit = name.trim().length > 0 && !submitting
 
