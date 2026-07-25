@@ -48,7 +48,7 @@ export default function SettlementSection({
           onClick={handleCopy}
           className="rounded-full border border-[var(--color-border)] bg-bg px-3 py-1.5 text-sm font-bold text-accent2 transition hover:border-accent2"
         >
-          {copied ? 'Copied!' : 'Copy for WhatsApp'}
+          {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
 
