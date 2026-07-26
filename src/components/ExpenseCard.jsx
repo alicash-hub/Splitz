@@ -11,9 +11,16 @@ function splitLabel(expense, memberNameById, memberCount) {
   return `${names[0]} & ${names.length - 1} others`
 }
 
-// One card per expense: who paid, what for, how much, when. Tappable (opens
-// expense options) when an onSelect handler is provided. When an expense is
-// split with only some members (not the whole trip), a signifier line names them.
+// How many ways the cost is split: the participant count, or the whole trip.
+function waysCount(expense, memberCount) {
+  const ids = Array.isArray(expense.split_between) ? expense.split_between : null
+  if (ids && ids.length > 0 && ids.length < memberCount) return ids.length
+  return memberCount
+}
+
+// One compact card per expense: payer avatar, what for, "<payer> paid · <when>",
+// amount and how many ways it split. When an expense is shared with only some
+// members, a signifier line names them.
 export default function ExpenseCard({
   expense,
   payerName,
@@ -25,6 +32,7 @@ export default function ExpenseCard({
     'flex w-full items-center gap-3 rounded-card border border-[var(--color-border)] bg-bg p-4 text-left shadow-[0_2px_0_var(--color-border)]'
 
   const split = splitLabel(expense, memberNameById, memberCount)
+  const ways = memberCount > 1 ? waysCount(expense, memberCount) : 0
 
   const inner = (
     <>
@@ -49,9 +57,16 @@ export default function ExpenseCard({
         )}
       </div>
 
-      <span className="shrink-0 font-display font-extrabold text-text">
-        {formatEGP(expense.amount)}
-      </span>
+      <div className="shrink-0 text-right">
+        <p className="font-display font-extrabold text-text">
+          {formatEGP(expense.amount)}
+        </p>
+        {ways > 0 && (
+          <p className="text-xs font-semibold text-text-muted">
+            split {ways} {ways === 1 ? 'way' : 'ways'}
+          </p>
+        )}
+      </div>
     </>
   )
 
@@ -66,9 +81,6 @@ export default function ExpenseCard({
       className={`${base} transition hover:border-accent`}
     >
       {inner}
-      <span aria-hidden className="-ml-1 shrink-0 text-text-muted">
-        ›
-      </span>
     </button>
   )
 }

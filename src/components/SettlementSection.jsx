@@ -17,8 +17,8 @@ function Avatar({ name }) {
   )
 }
 
-// `onSettle(transfer)` fires on the per-row CTA. It's a placeholder in R4 —
-// recording real payments is wired up in R5.
+// `onSettle(transfer)` fires on the per-row CTA (Settle up / Mark received) and
+// opens the SettleSheet to record the real-world payment.
 export default function SettlementSection({
   tripName,
   transfers,
