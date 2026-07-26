@@ -2,18 +2,14 @@ import { useMemo, useState } from 'react'
 import { useTripData } from '../hooks/useTripData'
 import { computeBalances, minimizeTransfers } from '../lib/settlement'
 import { deleteSettlement } from '../lib/settlements'
-import { clearCachedMemberId } from '../lib/identity'
-import { formatEGP } from '../lib/format'
-import MemberInitials from '../components/MemberInitials'
+import { initials } from '../lib/format'
 import BalanceSummary from '../components/BalanceSummary'
-import BalanceCard from '../components/BalanceCard'
 import SettlementSection from '../components/SettlementSection'
 import ExpenseCard from '../components/ExpenseCard'
 import SettlementCard from '../components/SettlementCard'
 import SwipeableRow from '../components/SwipeableRow'
 import TabBar from '../components/TabBar'
 import AddExpense from '../components/AddExpense'
-import MemberSheet from '../components/MemberSheet'
 import ExpenseSheet from '../components/ExpenseSheet'
 import ShareSheet from '../components/ShareSheet'
 import SettleSheet from '../components/SettleSheet'
@@ -26,32 +22,63 @@ function tripEmoji(seed = '') {
   return TRIP_EMOJIS[h]
 }
 
-// Glanceable "You're owed / You owe" pill in the Activity header. Tapping it
-// jumps to the Balances tab, so the number is never lost even off that tab.
-function OwedPill({ net, onClick }) {
-  const settled = Math.abs(net) < 0.005
-  const owed = net > 0
-  const label = settled ? 'All settled' : owed ? "You're owed" : 'You owe'
-  const tone = settled ? 'text-text-muted' : owed ? 'text-accent' : 'text-negative'
-  const bg = settled ? 'bg-surface' : owed ? 'bg-chip' : 'bg-[#ffecec]'
+// Shared trip header: emoji tile + trip name + current tab title on the left,
+// overlapping member avatars + a dashed add-member button on the right.
+function TripHeader({ emoji, tripName, tabTitle, members, onAdd }) {
+  const shown = members.slice(0, 4)
+  const extra = members.length - shown.length
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`shrink-0 rounded-card px-3 py-1.5 text-right transition active:translate-y-[1px] ${bg}`}
-    >
-      <span
-        className={`block text-[10px] font-extrabold uppercase tracking-wide ${tone}`}
-      >
-        {label}
-      </span>
-      {!settled && (
-        <span className={`block font-display text-base font-extrabold ${tone}`}>
-          {formatEGP(Math.abs(net))}
-        </span>
-      )}
-    </button>
+    <header className="mb-6 flex items-center justify-between gap-3">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-chip text-xl">
+          {emoji}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-xs font-bold uppercase tracking-wide text-text-muted">
+            {tripName}
+          </p>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-text">
+            {tabTitle}
+          </h1>
+        </div>
+      </div>
+
+      <div className="flex shrink-0 items-center">
+        {shown.map((m, i) => (
+          <div
+            key={m.id}
+            title={m.name}
+            className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-bg bg-chip text-xs font-extrabold text-text ${
+              i > 0 ? '-ml-2' : ''
+            }`}
+          >
+            {initials(m.name)}
+          </div>
+        ))}
+        {extra > 0 && (
+          <div className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-bg bg-surface text-[10px] font-extrabold text-text-muted">
+            +{extra}
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={onAdd}
+          title="Add people"
+          aria-label="Add people"
+          className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-[#b9c6d4] bg-bg text-accent2 transition hover:border-accent2"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </header>
   )
 }
 
@@ -65,14 +92,12 @@ export default function TripDashboard({ trip, memberId }) {
     loading,
     refreshExpenses,
     refreshSettlements,
-    refresh,
   } = useTripData(trip?.id)
 
   const [tab, setTab] = useState('activity')
   const [showAdd, setShowAdd] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [toast, setToast] = useState(null) // { text, actionLabel?, onAction? }
-  const [selectedMember, setSelectedMember] = useState(null)
   const [selectedExpense, setSelectedExpense] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [editingExpense, setEditingExpense] = useState(null)
@@ -81,21 +106,6 @@ export default function TripDashboard({ trip, memberId }) {
   function openExpense(expense, { confirm = false } = {}) {
     setConfirmDelete(confirm)
     setSelectedExpense(expense)
-  }
-
-  const selectedExpenseCount = useMemo(
-    () =>
-      selectedMember
-        ? expenses.filter((e) => e.paid_by === selectedMember.memberId).length
-        : 0,
-    [selectedMember, expenses],
-  )
-
-  function handleRemoved(removed) {
-    // If you removed yourself, drop the cached identity so a reload re-prompts.
-    if (removed.id === memberId) clearCachedMemberId(trip.id)
-    setSelectedMember(null)
-    refresh()
   }
 
   const balances = useMemo(
@@ -226,7 +236,6 @@ export default function TripDashboard({ trip, memberId }) {
                 payerName={memberNameById.get(item.data.paid_by) ?? 'Someone'}
                 memberNameById={memberNameById}
                 memberCount={members.length}
-                onSelect={() => openExpense(item.data)}
               />
             </SwipeableRow>
           ) : (
@@ -258,88 +267,34 @@ export default function TripDashboard({ trip, memberId }) {
   return (
     <>
       <main className="mx-auto min-h-full max-w-md px-6 pt-10 pb-28">
+        <TripHeader
+          emoji={tripEmoji(trip?.slug ?? trip?.id ?? tripName)}
+          tripName={tripName}
+          tabTitle={tab === 'activity' ? 'Activity' : 'Balances'}
+          members={members}
+          onAdd={() => setShowShare(true)}
+        />
+
         {tab === 'activity' ? (
           <>
-            <header className="mb-6 flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-chip text-xl">
-                  {tripEmoji(trip?.slug ?? trip?.id ?? tripName)}
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-bold uppercase tracking-wide text-text-muted">
-                    {tripName}
-                  </p>
-                  <h1 className="font-display text-2xl font-extrabold tracking-tight text-text">
-                    Activity
-                  </h1>
-                </div>
-              </div>
-              {!solo && (
-                <OwedPill net={myNet} onClick={() => setTab('balances')} />
-              )}
-            </header>
-
             {solo && <div className="mb-8">{inviteCard}</div>}
-
             <section>{activityFeed}</section>
           </>
+        ) : solo ? (
+          inviteCard
         ) : (
           <>
-            <header className="mb-6">
-              <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
-                {tripName}
-              </p>
-              <h1 className="font-display text-2xl font-extrabold tracking-tight text-text">
-                Balances
-              </h1>
-            </header>
+            <div className="mb-6">
+              <BalanceSummary net={myNet} />
+            </div>
 
-            {solo ? (
-              inviteCard
-            ) : (
-              <>
-                <div className="mb-6 flex items-center justify-between gap-3">
-                  <MemberInitials members={members} />
-                  <button
-                    type="button"
-                    onClick={() => setShowShare(true)}
-                    className="shrink-0 rounded-full border border-[var(--color-border)] bg-bg px-3 py-1.5 text-sm font-bold text-accent2 shadow-[0_2px_0_var(--color-border)] transition hover:border-accent2"
-                  >
-                    Invite
-                  </button>
-                </div>
-
-                <div className="mb-6">
-                  <BalanceSummary net={myNet} />
-                </div>
-
-                {transfers.length > 0 && (
-                  <div className="mb-6">
-                    <SettlementSection
-                      tripName={tripName}
-                      transfers={transfers}
-                      memberId={memberId}
-                      onSettle={(t) => setSettlingTransfer(t)}
-                    />
-                  </div>
-                )}
-
-                <details className="rounded-card border border-[var(--color-border)] bg-bg shadow-[0_2px_0_var(--color-border)]">
-                  <summary className="cursor-pointer select-none px-4 py-3 font-display text-sm font-bold text-text">
-                    Per person
-                  </summary>
-                  <div className="flex flex-col gap-2 px-3 pb-3">
-                    {balances.map((b) => (
-                      <BalanceCard
-                        key={b.memberId}
-                        name={b.name}
-                        net={b.net}
-                        onSelect={() => setSelectedMember(b)}
-                      />
-                    ))}
-                  </div>
-                </details>
-              </>
+            {transfers.length > 0 && (
+              <SettlementSection
+                tripName={tripName}
+                transfers={transfers}
+                memberId={memberId}
+                onSettle={(t) => setSettlingTransfer(t)}
+              />
             )}
           </>
         )}
@@ -369,16 +324,6 @@ export default function TripDashboard({ trip, memberId }) {
           expense={editingExpense}
           onClose={() => setEditingExpense(null)}
           onSaved={refreshExpenses}
-        />
-      )}
-
-      {selectedMember && (
-        <MemberSheet
-          member={{ id: selectedMember.memberId, name: selectedMember.name }}
-          net={selectedMember.net}
-          expenseCount={selectedExpenseCount}
-          onClose={() => setSelectedMember(null)}
-          onRemoved={handleRemoved}
         />
       )}
 
