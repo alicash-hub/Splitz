@@ -157,7 +157,7 @@ export default function AddExpense({
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. Dinner at Zööba"
+              placeholder="Dinner"
               autoComplete="off"
               maxLength={120}
               className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base text-text shadow-[0_2px_0_var(--color-border)] outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
