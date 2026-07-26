@@ -10,6 +10,23 @@ describe('categoryEmoji', () => {
     expect(categoryEmoji('UBER to the beach')).toBe('🚗')
   })
 
+  it('understands Arabic', () => {
+    expect(categoryEmoji('عشاء في زوبا')).toBe('🍽️')
+    expect(categoryEmoji('قهوة')).toBe('☕')
+    expect(categoryEmoji('بنزين العربية')).toBe('⛽')
+    expect(categoryEmoji('شاليه الساحل')).toBe('🏠')
+  })
+
+  it('understands Franco-Arabic', () => {
+    expect(categoryEmoji('3asha m3a el shabab')).toBe('🍽️')
+    expect(categoryEmoji('2ahwa')).toBe('☕')
+    expect(categoryEmoji('banzine')).toBe('⛽')
+  })
+
+  it('only matches at a word start (no mid-word false hits)', () => {
+    expect(categoryEmoji('Trip to Las Vegas')).toBe('🧾') // not ⛽ from "gas"
+  })
+
   it('falls back to a receipt when blank or unrecognized', () => {
     expect(categoryEmoji('')).toBe('🧾')
     expect(categoryEmoji('   ')).toBe('🧾')
