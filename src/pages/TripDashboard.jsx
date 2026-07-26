@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTripData } from '../hooks/useTripData'
 import { computeBalances, minimizeTransfers } from '../lib/settlement'
 import { deleteSettlement } from '../lib/settlements'
@@ -18,6 +18,15 @@ import SettleSheet from '../components/SettleSheet'
 // avatars on their own line below (wraps, so a big group doesn't crowd the title)
 // followed by a dashed add-people button.
 function TripHeader({ tripName, tabTitle, members, onAdd }) {
+  // Tapping an avatar flashes the member's name (touch has no hover tooltip).
+  const [revealed, setRevealed] = useState(null)
+  const timer = useRef(null)
+  function reveal(id) {
+    setRevealed(id)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setRevealed(null), 1800)
+  }
+
   return (
     <header className="mb-6">
       <div className="flex min-w-0 items-center gap-3">
@@ -36,12 +45,21 @@ function TripHeader({ tripName, tabTitle, members, onAdd }) {
 
       <div className="mt-4 flex flex-wrap items-center gap-2">
         {members.map((m) => (
-          <div
-            key={m.id}
-            title={m.name}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-chip text-xs font-extrabold text-text"
-          >
-            {initials(m.name)}
+          <div key={m.id} className="relative">
+            <button
+              type="button"
+              onClick={() => reveal(m.id)}
+              title={m.name}
+              aria-label={m.name}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-chip text-xs font-extrabold text-text transition hover:brightness-95"
+            >
+              {initials(m.name)}
+            </button>
+            {revealed === m.id && (
+              <span className="absolute bottom-full left-1/2 z-10 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg bg-text px-2.5 py-1 text-xs font-bold text-white shadow-lg">
+                {m.name}
+              </span>
+            )}
           </div>
         ))}
         <button

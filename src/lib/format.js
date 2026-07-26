@@ -11,6 +11,35 @@ export function formatEGP(amount) {
   return `EGP ${egp.format(rounded)}`
 }
 
+// Keyword → emoji for auto-categorizing an expense by its description. First
+// match wins, so order from more specific to more general.
+const EMOJI_RULES = [
+  ['🏠', ['house', 'chalet', 'rent', 'room', 'cabin', 'airbnb', 'hotel', 'stay', 'villa', 'apartment', 'flat']],
+  ['🐟', ['fish', 'seafood']],
+  ['🍕', ['pizza', 'burger', 'koshari', 'shawarma']],
+  ['☕', ['coffee', 'cafe', 'café', 'tea']],
+  ['🍺', ['drinks', 'bar', 'beer', 'wine', 'alcohol', 'cocktail']],
+  ['🍽️', ['dinner', 'lunch', 'food', 'meal', 'eat', 'restaurant', 'breakfast', 'brunch', 'snack']],
+  ['🛒', ['groc', 'market', 'super', 'carrefour', 'shopping']],
+  ['⛽', ['gas', 'fuel', 'petrol', 'benzin']],
+  ['🚗', ['car', 'taxi', 'uber', 'careem', 'ride', 'transport', 'toll', 'parking']],
+  ['🎟️', ['ticket', 'entry', 'entrance', 'tour', 'museum', 'cinema', 'movie']],
+  ['🏖️', ['beach', 'resort', 'sea', 'pool']],
+]
+
+/**
+ * Pick an emoji for an expense from its description. Returns a generic receipt
+ * (🧾) when the text is blank or nothing matches. Pure and case-insensitive.
+ */
+export function categoryEmoji(text) {
+  const s = String(text ?? '').toLowerCase()
+  if (!s.trim()) return '🧾'
+  for (const [emoji, keywords] of EMOJI_RULES) {
+    if (keywords.some((k) => s.includes(k))) return emoji
+  }
+  return '🧾'
+}
+
 /** Up to two uppercase initials from a name. "Yara Kamel" -> "YK", "Yara" -> "Y". */
 export function initials(name) {
   const parts = String(name ?? '')

@@ -1,4 +1,4 @@
-import { formatEGP, formatWhen, initials } from '../lib/format'
+import { categoryEmoji, formatEGP, formatWhen } from '../lib/format'
 
 // Name the members an expense is split among, or null when it's the whole trip
 // (the default, which we leave unmarked to keep cards uncluttered).
@@ -36,11 +36,8 @@ export default function ExpenseCard({
 
   const inner = (
     <>
-      <div
-        title={payerName}
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-chip text-sm font-bold text-text"
-      >
-        {initials(payerName)}
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-surface text-lg">
+        {categoryEmoji(expense.description)}
       </div>
 
       <div className="min-w-0 flex-1">
