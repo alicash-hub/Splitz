@@ -141,7 +141,6 @@ export default function AddExpense({
                   setAmountStr(e.target.value.replace(/[^0-9.]/g, ''))
                 }
                 placeholder="0"
-                autoFocus
                 autoComplete="off"
                 className="w-full bg-transparent font-display text-4xl font-extrabold text-text outline-none placeholder:text-[var(--color-text-muted)]/40"
               />

@@ -67,7 +67,7 @@ export default function SettlementSection({
               strokeLinecap="round"
             />
           </svg>
-          {copied ? 'Copied!' : 'Copy all'}
+          {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
 
