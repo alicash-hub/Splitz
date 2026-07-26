@@ -147,6 +147,23 @@ export default function AddExpense({
             </div>
           </div>
 
+          {/* What for — right after the amount; optional (drives the title + emoji) */}
+          <div className="flex flex-col gap-2">
+            <label htmlFor="expense-desc" className="text-sm font-bold text-text">
+              What for? <span className="text-text-muted">(optional)</span>
+            </label>
+            <input
+              id="expense-desc"
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g. Dinner at Zööba"
+              autoComplete="off"
+              maxLength={120}
+              className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base text-text shadow-[0_2px_0_var(--color-border)] outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
+            />
+          </div>
+
           {/* Who paid — collapsed to a summary, expands to a single-select */}
           <div className="flex flex-col gap-2">
             <button
@@ -255,23 +272,6 @@ export default function AddExpense({
                 )}
               </div>
             )}
-          </div>
-
-          {/* What for */}
-          <div className="flex flex-col gap-2">
-            <label htmlFor="expense-desc" className="text-sm font-bold text-text">
-              What for? <span className="text-text-muted">(optional)</span>
-            </label>
-            <input
-              id="expense-desc"
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. Lunch at the resort"
-              autoComplete="off"
-              maxLength={120}
-              className="w-full rounded-card border border-[var(--color-border)] bg-bg px-4 py-3 text-base text-text shadow-[0_2px_0_var(--color-border)] outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/30"
-            />
           </div>
 
           {error && (
