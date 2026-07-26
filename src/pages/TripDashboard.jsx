@@ -5,7 +5,7 @@ import { deleteSettlement } from '../lib/settlements'
 import { clearCachedMemberId } from '../lib/identity'
 import { formatEGP } from '../lib/format'
 import MemberInitials from '../components/MemberInitials'
-import BalanceHero from '../components/BalanceHero'
+import BalanceSummary from '../components/BalanceSummary'
 import BalanceCard from '../components/BalanceCard'
 import SettlementSection from '../components/SettlementSection'
 import ExpenseCard from '../components/ExpenseCard'
@@ -310,7 +310,7 @@ export default function TripDashboard({ trip, memberId }) {
                 </div>
 
                 <div className="mb-6">
-                  <BalanceHero net={myNet} />
+                  <BalanceSummary net={myNet} />
                 </div>
 
                 {transfers.length > 0 && (
