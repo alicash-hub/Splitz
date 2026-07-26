@@ -14,25 +14,15 @@ import ExpenseSheet from '../components/ExpenseSheet'
 import ShareSheet from '../components/ShareSheet'
 import SettleSheet from '../components/SettleSheet'
 
-// A stable, seeded emoji tile for the trip (no schema — derived from the slug).
-const TRIP_EMOJIS = ['🏖️', '⛺', '🍽️', '🎉', '🚗', '🏔️', '🧳', '🏝️']
-function tripEmoji(seed = '') {
-  let h = 0
-  for (const ch of String(seed)) h = (h + ch.charCodeAt(0)) % TRIP_EMOJIS.length
-  return TRIP_EMOJIS[h]
-}
-
-// Shared trip header: emoji tile + trip name + current tab title on the left,
-// overlapping member avatars + a dashed add-member button on the right.
-function TripHeader({ emoji, tripName, tabTitle, members, onAdd }) {
-  const shown = members.slice(0, 4)
-  const extra = members.length - shown.length
-
+// Shared trip header: emoji tile + trip name + current tab title, with the member
+// avatars on their own line below (wraps, so a big group doesn't crowd the title)
+// followed by a dashed add-people button.
+function TripHeader({ tripName, tabTitle, members, onAdd }) {
   return (
-    <header className="mb-6 flex items-center justify-between gap-3">
+    <header className="mb-6">
       <div className="flex min-w-0 items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-chip text-xl">
-          {emoji}
+          🏖️
         </div>
         <div className="min-w-0">
           <p className="truncate text-xs font-bold uppercase tracking-wide text-text-muted">
@@ -44,29 +34,22 @@ function TripHeader({ emoji, tripName, tabTitle, members, onAdd }) {
         </div>
       </div>
 
-      <div className="flex shrink-0 items-center">
-        {shown.map((m, i) => (
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {members.map((m) => (
           <div
             key={m.id}
             title={m.name}
-            className={`flex h-9 w-9 items-center justify-center rounded-full border-2 border-bg bg-chip text-xs font-extrabold text-text ${
-              i > 0 ? '-ml-2' : ''
-            }`}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-chip text-xs font-extrabold text-text"
           >
             {initials(m.name)}
           </div>
         ))}
-        {extra > 0 && (
-          <div className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-bg bg-surface text-[10px] font-extrabold text-text-muted">
-            +{extra}
-          </div>
-        )}
         <button
           type="button"
           onClick={onAdd}
           title="Add people"
           aria-label="Add people"
-          className="-ml-2 flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-[#b9c6d4] bg-bg text-accent2 transition hover:border-accent2"
+          className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-[#b9c6d4] bg-bg text-accent2 transition hover:border-accent2"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
@@ -236,6 +219,7 @@ export default function TripDashboard({ trip, memberId }) {
                 payerName={memberNameById.get(item.data.paid_by) ?? 'Someone'}
                 memberNameById={memberNameById}
                 memberCount={members.length}
+                onSelect={() => openExpense(item.data)}
               />
             </SwipeableRow>
           ) : (
@@ -268,7 +252,6 @@ export default function TripDashboard({ trip, memberId }) {
     <>
       <main className="mx-auto min-h-full max-w-md px-6 pt-10 pb-28">
         <TripHeader
-          emoji={tripEmoji(trip?.slug ?? trip?.id ?? tripName)}
           tripName={tripName}
           tabTitle={tab === 'activity' ? 'Activity' : 'Balances'}
           members={members}
