@@ -1,21 +1,87 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useTripData } from '../hooks/useTripData'
 import { computeBalances, minimizeTransfers } from '../lib/settlement'
 import { deleteSettlement } from '../lib/settlements'
-import { clearCachedMemberId } from '../lib/identity'
-import MemberInitials from '../components/MemberInitials'
-import BalanceHero from '../components/BalanceHero'
-import BalanceCard from '../components/BalanceCard'
+import { initials } from '../lib/format'
+import BalanceSummary from '../components/BalanceSummary'
 import SettlementSection from '../components/SettlementSection'
 import ExpenseCard from '../components/ExpenseCard'
 import SettlementCard from '../components/SettlementCard'
 import SwipeableRow from '../components/SwipeableRow'
-import AddExpenseButton from '../components/AddExpenseButton'
+import TabBar from '../components/TabBar'
 import AddExpense from '../components/AddExpense'
-import MemberSheet from '../components/MemberSheet'
 import ExpenseSheet from '../components/ExpenseSheet'
 import ShareSheet from '../components/ShareSheet'
 import SettleSheet from '../components/SettleSheet'
+
+// Shared trip header: emoji tile + trip name + current tab title, with the member
+// avatars on their own line below (wraps, so a big group doesn't crowd the title)
+// followed by a dashed add-people button.
+function TripHeader({ tripName, tabTitle, members, onAdd }) {
+  // Tapping an avatar flashes the member's name (touch has no hover tooltip).
+  const [revealed, setRevealed] = useState(null)
+  const timer = useRef(null)
+  function reveal(id) {
+    setRevealed(id)
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setRevealed(null), 1800)
+  }
+
+  return (
+    <header className="mb-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-chip text-xl">
+          🏖️
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-xs font-bold uppercase tracking-wide text-text-muted">
+            {tripName}
+          </p>
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-text">
+            {tabTitle}
+          </h1>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {members.map((m) => (
+          <div key={m.id} className="relative">
+            <button
+              type="button"
+              onClick={() => reveal(m.id)}
+              title={m.name}
+              aria-label={m.name}
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-chip text-xs font-extrabold text-text transition hover:brightness-95"
+            >
+              {initials(m.name)}
+            </button>
+            {revealed === m.id && (
+              <span className="absolute bottom-full left-1/2 z-10 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg bg-text px-2.5 py-1 text-xs font-bold text-white shadow-lg">
+                {m.name}
+              </span>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={onAdd}
+          title="Add people"
+          aria-label="Add people"
+          className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-[#b9c6d4] bg-bg text-accent2 transition hover:border-accent2"
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <path
+              d="M12 5v14M5 12h14"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </header>
+  )
+}
 
 export default function TripDashboard({ trip, memberId }) {
   const tripName = trip?.name ?? 'Trip'
@@ -27,12 +93,12 @@ export default function TripDashboard({ trip, memberId }) {
     loading,
     refreshExpenses,
     refreshSettlements,
-    refresh,
   } = useTripData(trip?.id)
+
+  const [tab, setTab] = useState('activity')
   const [showAdd, setShowAdd] = useState(false)
   const [showShare, setShowShare] = useState(false)
   const [toast, setToast] = useState(null) // { text, actionLabel?, onAction? }
-  const [selectedMember, setSelectedMember] = useState(null)
   const [selectedExpense, setSelectedExpense] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [editingExpense, setEditingExpense] = useState(null)
@@ -41,21 +107,6 @@ export default function TripDashboard({ trip, memberId }) {
   function openExpense(expense, { confirm = false } = {}) {
     setConfirmDelete(confirm)
     setSelectedExpense(expense)
-  }
-
-  const selectedExpenseCount = useMemo(
-    () =>
-      selectedMember
-        ? expenses.filter((e) => e.paid_by === selectedMember.memberId).length
-        : 0,
-    [selectedMember, expenses],
-  )
-
-  function handleRemoved(removed) {
-    // If you removed yourself, drop the cached identity so a reload re-prompts.
-    if (removed.id === memberId) clearCachedMemberId(trip.id)
-    setSelectedMember(null)
-    refresh()
   }
 
   const balances = useMemo(
@@ -129,163 +180,128 @@ export default function TripDashboard({ trip, memberId }) {
     )
   }
 
+  const inviteCard = (
+    <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center shadow-[0_2px_0_var(--color-border)]">
+      <div className="text-5xl">🕴️</div>
+      <h2 className="mt-3 font-display text-xl font-extrabold text-text">
+        It's just you in here
+      </h2>
+      <button
+        type="button"
+        onClick={() => setShowShare(true)}
+        className="mt-6 w-full rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)]"
+      >
+        Invite friends
+      </button>
+    </div>
+  )
+
+  const activityFeed =
+    activity.length === 0 ? (
+      <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center font-semibold text-text-muted shadow-[0_2px_0_var(--color-border)]">
+        No activity yet. Tap the “+” below to log the first expense.
+      </div>
+    ) : (
+      <div className="flex flex-col gap-2">
+        {activity.map((item) =>
+          item.kind === 'expense' ? (
+            <SwipeableRow
+              key={`e-${item.data.id}`}
+              actions={({ close }) => (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      close()
+                      setEditingExpense(item.data)
+                    }}
+                    className="flex flex-1 items-center justify-center bg-accent2 text-sm font-bold text-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      close()
+                      openExpense(item.data, { confirm: true })
+                    }}
+                    className="flex flex-1 items-center justify-center bg-negative text-sm font-semibold text-white"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
+            >
+              <ExpenseCard
+                expense={item.data}
+                payerName={memberNameById.get(item.data.paid_by) ?? 'Someone'}
+                memberNameById={memberNameById}
+                memberCount={members.length}
+                onSelect={() => openExpense(item.data)}
+              />
+            </SwipeableRow>
+          ) : (
+            <SwipeableRow
+              key={`s-${item.data.id}`}
+              actions={({ close }) => (
+                <button
+                  type="button"
+                  onClick={() => {
+                    close()
+                    removeSettlement(item.data)
+                  }}
+                  className="flex flex-1 items-center justify-center bg-negative text-sm font-bold text-white"
+                >
+                  Delete
+                </button>
+              )}
+            >
+              <SettlementCard
+                settlement={item.data}
+                memberNameById={memberNameById}
+              />
+            </SwipeableRow>
+          ),
+        )}
+      </div>
+    )
+
   return (
     <>
-      <main className="mx-auto max-w-md px-6 pt-10 pb-28">
-        <header className="mb-6">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight text-text">
-            {tripName}
-          </h1>
-          {!solo && (
-            <p className="mt-1 text-sm text-text-muted">
-              {members.length} {members.length === 1 ? 'person' : 'people'}
-            </p>
-          )}
-        </header>
+      <main className="mx-auto min-h-full max-w-md px-6 pt-10 pb-28">
+        <TripHeader
+          tripName={tripName}
+          tabTitle={tab === 'activity' ? 'Activity' : 'Balances'}
+          members={members}
+          onAdd={() => setShowShare(true)}
+        />
 
-        {solo ? (
+        {tab === 'activity' ? (
           <>
-            <div className="mb-8">
-              <MemberInitials members={members} />
-            </div>
-            <section className="mb-8">
-              <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center shadow-[0_2px_0_var(--color-border)]">
-              <div className="text-5xl">🕴️</div>
-              <h2 className="mt-3 font-display text-xl font-extrabold text-text">
-                It's just you in here
-              </h2>
-              <button
-                type="button"
-                onClick={() => setShowShare(true)}
-                className="mt-6 w-full rounded-card bg-accent px-4 py-3 text-base font-extrabold text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)]"
-              >
-                Invite friends
-              </button>
-              </div>
-            </section>
+            {solo && <div className="mb-8">{inviteCard}</div>}
+            <section>{activityFeed}</section>
           </>
+        ) : solo ? (
+          inviteCard
         ) : (
           <>
-            <div className="mb-8 flex items-center justify-between gap-3">
-              <MemberInitials members={members} />
-              <button
-                type="button"
-                onClick={() => setShowShare(true)}
-                className="shrink-0 rounded-full border border-[var(--color-border)] bg-bg px-3 py-1.5 text-sm font-bold text-accent2 shadow-[0_2px_0_var(--color-border)] transition hover:border-accent2"
-              >
-                Invite
-              </button>
-            </div>
-
             <div className="mb-6">
-              <BalanceHero net={myNet} />
+              <BalanceSummary net={myNet} />
             </div>
 
             {transfers.length > 0 && (
-              <div className="mb-6">
-                <SettlementSection
-                  tripName={tripName}
-                  transfers={transfers}
-                  memberId={memberId}
-                  onSettle={(t) => setSettlingTransfer(t)}
-                />
-              </div>
+              <SettlementSection
+                tripName={tripName}
+                transfers={transfers}
+                memberId={memberId}
+                onSettle={(t) => setSettlingTransfer(t)}
+              />
             )}
-
-            <details className="mb-8 rounded-card border border-[var(--color-border)] bg-bg shadow-[0_2px_0_var(--color-border)]">
-              <summary className="cursor-pointer select-none px-4 py-3 font-display text-sm font-bold text-text">
-                Per person
-              </summary>
-              <div className="flex flex-col gap-2 px-3 pb-3">
-                {balances.map((b) => (
-                  <BalanceCard
-                    key={b.memberId}
-                    name={b.name}
-                    net={b.net}
-                    onSelect={() => setSelectedMember(b)}
-                  />
-                ))}
-              </div>
-            </details>
           </>
         )}
-
-        <section>
-          <h2 className="mb-3 font-display text-lg font-bold text-text">
-            Activity
-          </h2>
-          {activity.length === 0 ? (
-            <div className="rounded-card border border-[var(--color-border)] bg-bg p-6 text-center font-semibold text-text-muted shadow-[0_2px_0_var(--color-border)]">
-              No activity yet. Tap “Add expense” to log the first one.
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {activity.map((item) =>
-                item.kind === 'expense' ? (
-                  <SwipeableRow
-                    key={`e-${item.data.id}`}
-                    actions={({ close }) => (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            close()
-                            setEditingExpense(item.data)
-                          }}
-                          className="flex flex-1 items-center justify-center bg-accent2 text-sm font-bold text-white"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            close()
-                            openExpense(item.data, { confirm: true })
-                          }}
-                          className="flex flex-1 items-center justify-center bg-negative text-sm font-semibold text-white"
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  >
-                    <ExpenseCard
-                      expense={item.data}
-                      payerName={
-                        memberNameById.get(item.data.paid_by) ?? 'Someone'
-                      }
-                      onSelect={() => openExpense(item.data)}
-                    />
-                  </SwipeableRow>
-                ) : (
-                  <SwipeableRow
-                    key={`s-${item.data.id}`}
-                    actions={({ close }) => (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          close()
-                          removeSettlement(item.data)
-                        }}
-                        className="flex flex-1 items-center justify-center bg-negative text-sm font-bold text-white"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  >
-                    <SettlementCard
-                      settlement={item.data}
-                      memberNameById={memberNameById}
-                    />
-                  </SwipeableRow>
-                ),
-              )}
-            </div>
-          )}
-        </section>
       </main>
 
-      <AddExpenseButton onClick={() => setShowAdd(true)} />
+      <TabBar tab={tab} onTab={setTab} onAdd={() => setShowAdd(true)} />
 
       {showShare && (
         <ShareSheet trip={trip} onClose={() => setShowShare(false)} />
@@ -309,16 +325,6 @@ export default function TripDashboard({ trip, memberId }) {
           expense={editingExpense}
           onClose={() => setEditingExpense(null)}
           onSaved={refreshExpenses}
-        />
-      )}
-
-      {selectedMember && (
-        <MemberSheet
-          member={{ id: selectedMember.memberId, name: selectedMember.name }}
-          net={selectedMember.net}
-          expenseCount={selectedExpenseCount}
-          onClose={() => setSelectedMember(null)}
-          onRemoved={handleRemoved}
         />
       )}
 

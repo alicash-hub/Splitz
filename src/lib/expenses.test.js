@@ -37,12 +37,22 @@ describe('addExpense', () => {
       paid_by: 'm1',
       amount: 150,
       description: 'Lunch',
+      split_between: null,
     })
   })
 
   it('stores a blank description as null', async () => {
     await addExpense('t1', { paidBy: 'm1', amount: 50, description: '   ' })
     expect(insert.mock.calls[0][0].description).toBeNull()
+  })
+
+  it('passes a subset split through, and normalizes an empty one to null', async () => {
+    await addExpense('t1', { paidBy: 'm1', amount: 50, splitBetween: ['m1', 'm2'] })
+    expect(insert.mock.calls[0][0].split_between).toEqual(['m1', 'm2'])
+
+    insert.mockClear()
+    await addExpense('t1', { paidBy: 'm1', amount: 50, splitBetween: [] })
+    expect(insert.mock.calls[0][0].split_between).toBeNull()
   })
 
   it('throws when Supabase returns an error', async () => {
@@ -71,6 +81,7 @@ describe('updateExpense', () => {
       paid_by: 'm2',
       amount: 80,
       description: 'Coffee',
+      split_between: null,
     })
   })
 

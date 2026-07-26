@@ -4,7 +4,7 @@ import { supabase } from './supabaseClient'
  * List a trip's expenses, newest first.
  *
  * @param {string} tripId
- * @returns {Promise<Array<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, created_at: string}>>}
+ * @returns {Promise<Array<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, split_between: string[]|null, created_at: string}>>}
  */
 export async function listExpenses(tripId) {
   const { data, error } = await supabase
@@ -21,11 +21,17 @@ export async function listExpenses(tripId) {
  * Add an expense to a trip. Amount is in EGP and must be > 0 (enforced by a DB
  * check as well). Description is optional and stored as null when blank.
  *
+ * `splitBetween` is the list of member ids sharing the cost; pass null (or a list
+ * covering everyone) to split across the whole trip — stored as null.
+ *
  * @param {string} tripId
- * @param {{ paidBy: string, amount: number, description?: string }} fields
- * @returns {Promise<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, created_at: string}>}
+ * @param {{ paidBy: string, amount: number, description?: string, splitBetween?: string[]|null }} fields
+ * @returns {Promise<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, split_between: string[]|null, created_at: string}>}
  */
-export async function addExpense(tripId, { paidBy, amount, description }) {
+export async function addExpense(
+  tripId,
+  { paidBy, amount, description, splitBetween = null },
+) {
   const { data, error } = await supabase
     .from('expenses')
     .insert({
@@ -33,6 +39,7 @@ export async function addExpense(tripId, { paidBy, amount, description }) {
       paid_by: paidBy,
       amount,
       description: description?.trim() || null,
+      split_between: splitBetween?.length ? splitBetween : null,
     })
     .select()
     .single()
@@ -42,19 +49,23 @@ export async function addExpense(tripId, { paidBy, amount, description }) {
 }
 
 /**
- * Update an expense's payer, amount and/or description.
+ * Update an expense's payer, amount, description and/or split.
  *
  * @param {string} expenseId
- * @param {{ paidBy: string, amount: number, description?: string }} fields
- * @returns {Promise<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, created_at: string}>}
+ * @param {{ paidBy: string, amount: number, description?: string, splitBetween?: string[]|null }} fields
+ * @returns {Promise<{id: string, trip_id: string, paid_by: string, amount: number, description: string|null, split_between: string[]|null, created_at: string}>}
  */
-export async function updateExpense(expenseId, { paidBy, amount, description }) {
+export async function updateExpense(
+  expenseId,
+  { paidBy, amount, description, splitBetween = null },
+) {
   const { data, error } = await supabase
     .from('expenses')
     .update({
       paid_by: paidBy,
       amount,
       description: description?.trim() || null,
+      split_between: splitBetween?.length ? splitBetween : null,
     })
     .eq('id', expenseId)
     .select()

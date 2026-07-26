@@ -17,8 +17,10 @@ function Avatar({ name }) {
   )
 }
 
-// `onSettle(transfer)` fires on the per-row CTA. It's a placeholder in R4 —
-// recording real payments is wired up in R5.
+// The settle-up list: EVERY outstanding transfer, calm and display-first. Rows
+// that involve the current user get a "You pay"/"You're owed" sub-label and a
+// full-width action pill (which opens the confirm sheet via `onSettle`); rows
+// between other people are muted, display-only. Copy-all lives here, not per row.
 export default function SettlementSection({
   tripName,
   transfers,
@@ -46,58 +48,69 @@ export default function SettlementSection({
         <button
           type="button"
           onClick={handleCopy}
-          className="rounded-full border border-[var(--color-border)] bg-bg px-3 py-1.5 text-sm font-bold text-accent2 transition hover:border-accent2"
+          className="flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-bg px-3 py-1.5 text-sm font-bold text-accent2 shadow-[0_2px_0_var(--color-border)] transition hover:border-accent2"
         >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+            <rect
+              x="8"
+              y="8"
+              width="12"
+              height="13"
+              rx="2.5"
+              stroke="currentColor"
+              strokeWidth="2.2"
+            />
+            <path
+              d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+            />
+          </svg>
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
 
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-2.5">
         {transfers.map((t, i) => {
           const fromMe = t.fromId === memberId
           const toMe = t.toId === memberId
           const involvesMe = fromMe || toMe
-          const accent = fromMe
-            ? 'text-negative'
-            : toMe
-              ? 'text-positive'
-              : 'text-text'
-          const tag = fromMe ? 'You pay' : toMe ? 'You get' : null
+          // Show the counterparty's avatar (your own face is uninformative).
+          const avatarName = fromMe ? t.toName : t.fromName
+          const fromLabel = fromMe ? 'You' : t.fromName
+          const toLabel = toMe ? 'You' : t.toName
+          const sub = fromMe ? 'You pay' : toMe ? "You're owed" : null
+          const actionLabel = fromMe ? 'Mark as sent' : 'Mark as received'
 
           return (
             <li
               key={`${t.fromId}-${t.toId}-${i}`}
-              className={`rounded-card border border-[var(--color-border)] p-4 shadow-[0_2px_0_var(--color-border)] ${
-                involvesMe ? 'bg-chip' : 'bg-bg'
+              className={`rounded-card border p-4 shadow-[0_2px_0_var(--color-border)] ${
+                involvesMe ? 'border-[#cdeeff] bg-bg' : 'border-[var(--color-border)] bg-bg'
               }`}
             >
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2">
-                  <Avatar name={t.fromName} />
-                  <span aria-hidden className="text-text-muted">
-                    →
-                  </span>
-                  <Avatar name={t.toName} />
+              <div className="flex items-center gap-3">
+                <Avatar name={avatarName} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-display font-extrabold text-text">
+                    {fromLabel} <span className="text-text-muted">→</span>{' '}
+                    {toLabel}
+                  </p>
+                  {sub && (
+                    <p className="mt-0.5 text-xs font-extrabold text-accent">
+                      {sub}
+                    </p>
+                  )}
                 </div>
                 <span
-                  className={`shrink-0 font-display text-lg font-extrabold ${accent}`}
+                  className={`shrink-0 font-display text-lg font-extrabold ${
+                    involvesMe ? 'text-text' : 'text-text-muted'
+                  }`}
                 >
                   {formatEGP(t.amount)}
                 </span>
               </div>
-
-              <p className="mt-2 text-sm text-text">
-                <span className="font-bold">{t.fromName}</span>
-                <span className="text-text-muted"> pays </span>
-                <span className="font-bold">{t.toName}</span>
-              </p>
-              {tag && (
-                <p
-                  className={`mt-0.5 text-xs font-extrabold uppercase tracking-wide ${accent}`}
-                >
-                  {tag}
-                </p>
-              )}
 
               {involvesMe && (
                 <button
@@ -105,7 +118,7 @@ export default function SettlementSection({
                   onClick={() => onSettle?.(t)}
                   className="mt-3 w-full rounded-card bg-accent px-4 py-2.5 text-sm font-extrabold uppercase tracking-wide text-white shadow-[0_3px_0_var(--color-accent-shadow)] transition hover:bg-accent-hover active:translate-y-[2px] active:shadow-[0_1px_0_var(--color-accent-shadow)]"
                 >
-                  {fromMe ? 'Settle up' : 'Mark received'}
+                  {actionLabel}
                 </button>
               )}
             </li>

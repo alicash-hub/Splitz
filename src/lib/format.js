@@ -11,6 +11,51 @@ export function formatEGP(amount) {
   return `EGP ${egp.format(rounded)}`
 }
 
+// Keyword → emoji for auto-categorizing an expense by its description. Covers
+// English, Arabic, and Franco-Arabic (Arabizi, e.g. "3asha", "2ahwa", "banzine").
+// First match wins, so order from more specific to more general.
+const EMOJI_RULES = [
+  ['🏠', ['house', 'chalet', 'hotel', 'airbnb', 'villa', 'apartment', 'rental', 'cabin', 'شاليه', 'فندق', 'شقة', 'بيت', 'منزل', 'ايجار', 'إيجار', 'fondo', 'sha2a']],
+  ['🐟', ['fish', 'seafood', 'سمك', 'samak', 'asmak']],
+  ['🍕', ['pizza', 'burger', 'koshari', 'koshary', 'shawarma', 'shawerma', 'feteer', 'crepe', 'بيتزا', 'برجر', 'برغر', 'كشري', 'شاورما', 'فطير', 'كريب']],
+  ['☕', ['coffee', 'cafe', 'café', 'nescafe', 'tea', 'قهوة', 'ahwa', 'a7wa', '2ahwa', 'كافيه', 'شاي', 'shay']],
+  ['🍺', ['beer', 'drinks', 'wine', 'cocktail', 'بيرة', 'مشروبات', 'نبيت']],
+  ['🍽️', ['dinner', 'lunch', 'food', 'meal', 'eat', 'restaurant', 'breakfast', 'brunch', 'snack', 'عشاء', 'غداء', 'فطار', 'فطور', 'اكل', 'أكل', 'مطعم', 'عزومة', '3asha', '3esha', 'ghada', 'ftar', 'fetar', 'akl', 'mat3am', 'matam', '3azoma']],
+  ['🛒', ['groc', 'grocery', 'market', 'supermarket', 'carrefour', 'kazyon', 'seoudi', 'hyper', 'shopping', 'بقالة', 'سوق', 'سوبر', 'كارفور', 'كازيون', 'تموين', 'ba2ala', 'sou2', 'souk', 'tamween']],
+  ['⛽', ['gas', 'fuel', 'petrol', 'benzin', 'banzine', 'benzine', 'banzeen', 'بنزين', 'وقود']],
+  ['🚗', ['car', 'taxi', 'uber', 'careem', 'ride', 'transport', 'toll', 'parking', 'تاكسي', 'أوبر', 'اوبر', 'كريم', 'مواصلات', 'عربية', 'أجرة', 'اجرة', 'جراج', '3arabeya', 'tawseela']],
+  ['🎟️', ['ticket', 'entry', 'entrance', 'tour', 'museum', 'cinema', 'movie', 'film', 'concert', 'تذكرة', 'تذاكر', 'دخول', 'متحف', 'سينما', 'فيلم', 'tazkara']],
+  ['🏖️', ['beach', 'resort', 'pool', 'بحر', 'شاطئ', 'منتجع', 'مسبح', 'ساحل', 'ba7r', 'bahr', 'sahel']],
+]
+
+// Latin/Franco terms match at a word start (so "gas" doesn't fire inside
+// "Vegas"); Arabic (non-ASCII) terms match anywhere, since ASCII word boundaries
+// don't apply to Arabic script. Precompiled once at load.
+const isAscii = (k) => [...k].every((ch) => ch.charCodeAt(0) < 128)
+const COMPILED = EMOJI_RULES.map(([emoji, keywords]) => ({
+  emoji,
+  arabic: keywords.filter((k) => !isAscii(k)),
+  latin: keywords
+    .filter(isAscii)
+    .map((k) => new RegExp(`(^|[^a-z0-9])${k}`)),
+}))
+
+/**
+ * Pick an emoji for an expense from its description. Returns a generic receipt
+ * (🧾) when the text is blank or nothing matches. Pure and case-insensitive;
+ * understands English, Arabic, and Franco-Arabic.
+ */
+export function categoryEmoji(text) {
+  const s = String(text ?? '').toLowerCase()
+  if (!s.trim()) return '🧾'
+  for (const { emoji, arabic, latin } of COMPILED) {
+    if (arabic.some((k) => s.includes(k)) || latin.some((re) => re.test(s))) {
+      return emoji
+    }
+  }
+  return '🧾'
+}
+
 /** Up to two uppercase initials from a name. "Yara Kamel" -> "YK", "Yara" -> "Y". */
 export function initials(name) {
   const parts = String(name ?? '')

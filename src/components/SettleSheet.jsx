@@ -52,8 +52,7 @@ export default function SettleSheet({ trip, transfer, currentMemberId, onClose, 
           {formatEGP(transfer.amount)}
         </p>
         <p className="mt-3 text-sm text-text-muted">
-          This just records it for the group — no money moves through the app. You
-          can undo it anytime.
+          This just records it for the group. You can undo it anytime.
         </p>
 
         {error && (
